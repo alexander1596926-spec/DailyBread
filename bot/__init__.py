@@ -1,0 +1,1 @@
+"""DailyBread Discord bot package."""
