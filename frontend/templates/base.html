@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="DailyBread is a calm Bible-focused Discord platform for designing and sending scripture embeds.">
+  <title>{{ page_title | default("DailyBread") }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind = {
+      config: {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              bread: {
+                linen: "#E9DFC8",
+                gold: "#D6B36A",
+                ink: "#2B2B2B",
+                night: "#181818",
+                charcoal: "#232323",
+                cream: "#F5EFE4",
+                amber: "#C9A55B",
+                sage: "#6E7D68"
+              }
+            },
+            fontFamily: {
+              sans: ["Manrope", "ui-sans-serif", "system-ui"],
+              serif: ["Cormorant Garamond", "Georgia", "serif"]
+            },
+            boxShadow: {
+              soft: "0 18px 70px rgba(43, 43, 43, 0.12)"
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+<body class="min-h-screen bg-bread-cream text-bread-ink antialiased transition-colors duration-300 dark:bg-bread-night dark:text-bread-cream">
+  <div class="min-h-screen flex flex-col">
+    {% include "partials/navbar.html" %}
+    <main class="flex-1">
+      {% block content %}{% endblock %}
+    </main>
+    {% include "partials/footer.html" %}
+  </div>
+  <script src="{{ url_for('static', path='js/app.js') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<header class="sticky top-0 z-50 border-b border-black/5 bg-bread-cream/90 backdrop-blur-md dark:border-white/10 dark:bg-bread-night/88">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8" aria-label="Primary navigation">
+    <a href="/" class="flex min-h-11 items-center gap-3">
+      <span class="grid h-10 w-10 place-items-center rounded-full border border-bread-gold/50 bg-bread-linen text-base font-extrabold tracking-wide text-bread-ink dark:border-bread-amber/50 dark:bg-bread-charcoal dark:text-bread-cream">DB</span>
+      <span class="text-lg font-extrabold tracking-wide">DailyBread</span>
+    </a>
+
+    <div class="hidden items-center gap-1 md:flex">
+      <a href="/" class="nav-link {{ 'is-active' if active_page == 'home' else '' }}">Home</a>
+      <a href="/login" class="nav-link {{ 'is-active' if active_page == 'login' else '' }}">Login</a>
+      <a href="/dashboard" class="nav-link {{ 'is-active' if active_page == 'dashboard' else '' }}">Dashboard</a>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button type="button" data-theme-toggle class="icon-button" aria-label="Toggle theme" aria-pressed="false">
+        <svg data-theme-icon="sun" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 4V2m0 20v-2m8-8h2M2 12h2m14.95-6.95 1.42-1.42M3.63 20.37l1.42-1.42m0-13.9L3.63 3.63m16.74 16.74-1.42-1.42M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <svg data-theme-icon="moon" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20.5 14.5A7.5 7.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <a href="/login" class="hidden min-h-11 items-center rounded-full bg-bread-ink px-5 text-sm font-bold text-bread-cream transition hover:bg-black dark:bg-bread-cream dark:text-bread-night dark:hover:bg-white md:inline-flex">Login with Discord</a>
+      <button type="button" data-menu-toggle class="icon-button md:hidden" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <div id="mobile-menu" data-mobile-menu class="hidden border-t border-black/5 px-4 pb-4 dark:border-white/10 md:hidden">
+    <div class="mx-auto flex max-w-7xl flex-col gap-2 pt-3">
+      <a href="/" class="mobile-nav-link {{ 'is-active' if active_page == 'home' else '' }}">Home</a>
+      <a href="/login" class="mobile-nav-link {{ 'is-active' if active_page == 'login' else '' }}">Login</a>
+      <a href="/dashboard" class="mobile-nav-link {{ 'is-active' if active_page == 'dashboard' else '' }}">Dashboard</a>
+      <a href="/login" class="mt-2 flex min-h-12 items-center justify-center rounded-full bg-bread-ink px-5 text-sm font-bold text-bread-cream dark:bg-bread-cream dark:text-bread-night">Login with Discord</a>
+    </div>
+  </div>
+</header>
