@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-6rem)] bg-gradient-to-b from-bread-cream/50 to-bread-cream/30 dark:from-bread-night/50 dark:to-bread-night/30 py-8">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <!-- Breadcrumb & Header -->
+    <div class="mb-8 flex flex-col gap-4">
+      <a href="/dashboard" class="w-fit text-sm font-semibold text-bread-gold transition hover:text-bread-ink dark:text-bread-amber dark:hover:text-bread-cream">← Back to Servers</a>
+      
+      <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+        <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-bread-sage dark:text-bread-amber">Server Management</p>
+            <div class="mt-3 flex items-center gap-4">
+              <div class="grid h-16 w-16 place-items-center rounded-2xl bg-bread-linen text-xl font-bold text-bread-ink dark:bg-bread-night">
+                {% if guild.icon_url %}
+                <img src="{{ guild.icon_url }}" alt="{{ guild.name }} icon" class="h-14 w-14 rounded-xl object-cover" />
+                {% else %}
+                <span>{{ guild.name[:2].upper() }}</span>
+                {% endif %}
+              </div>
+              <div>
+                <h1 class="font-serif text-3xl font-bold text-bread-ink dark:text-bread-cream">{{ guild.name }}</h1>
+                <p class="mt-2 text-sm text-black/60 dark:text-white/65">Manage channels, webhooks, and embeds.</p>
+              </div>
+            </div>
+          </div>
+          <a href="/dashboard/guild/{{ guild.guild_id }}/builder" class="inline-flex items-center justify-center rounded-2xl bg-bread-gold px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#c9a55b] dark:bg-bread-amber dark:hover:bg-[#b8945a]\">
+            Open Embed Builder
+          </a>
+        </div>
+      </section>
+    </div>
+
+    <!-- Channels Section -->
+    <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+      <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="font-serif text-3xl font-bold text-bread-ink dark:text-bread-cream">Text Channels</h2>
+          <p class="mt-2 text-sm text-black/65 dark:text-white/70">Create webhooks to send Bible embeds.</p>
+        </div>
+        <div id="channel-load-status" class="text-sm font-semibold text-bread-ink/70 dark:text-white/70">Loading channels...</div>
+      </div>
+
+      <div id="channels-grid" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Channels will be loaded via JS -->
+      </div>
+    </section>
+
+    <!-- Webhooks Section -->
+    <section class="mt-10 rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+      <div class="mb-8">
+        <h2 class="font-serif text-3xl font-bold text-bread-ink dark:text-bread-cream">Active Webhooks</h2>
+        <p class="mt-2 text-sm text-black/65 dark:text-white/70">All webhooks created for this server.</p>
+      </div>
+
+      <div id="webhooks-list" class="space-y-3">
+        <p class="text-sm text-black/60 dark:text-white/65">Loading webhooks...</p>
+      </div>
+    </section>
+
+    <!-- Help Section -->
+    <section class="mt-10 rounded-[2rem] border border-black/8 bg-gradient-to-br from-bread-linen/30 to-bread-gold/10 p-6 dark:border-white/10 dark:from-bread-night/80 dark:to-bread-amber/5">
+      <h2 class="font-semibold text-bread-ink dark:text-bread-cream">Webhook Setup Help</h2>
+      <ul class="mt-4 space-y-3 text-sm text-black/70 dark:text-white/70">
+        <li class="flex gap-3">
+          <span class="font-bold text-bread-gold dark:text-bread-amber">→</span>
+          <span>Click "Create Webhook" on any channel to set up a Bible verse delivery point.</span>
+        </li>
+        <li class="flex gap-3">
+          <span class="font-bold text-bread-gold dark:text-bread-amber">→</span>
+          <span>Each webhook can receive embeds from the embed builder.</span>
+        </li>
+        <li class="flex gap-3">
+          <span class="font-bold text-bread-gold dark:text-bread-amber">→</span>
+          <span>Webhooks are stored securely and managed through this interface.</span>
+        </li>
+      </ul>
+    </section>
+  </div>
+</div>
+
+<script>
+const guildId = '{{ guild.id }}';
+const channelGrid = document.getElementById('channels-grid');
+const channelLoadStatus = document.getElementById('channel-load-status');
+const webhooksList = document.getElementById('webhooks-list');
+
+async function loadChannels() {
+  try {
+    const response = await fetch(`/api/guilds/${guildId}/channels`);
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Failed to load channels');
+    }
+
+    channelLoadStatus.textContent = '';
+    const channels = data.channels || [];
+    
+    if (channels.length === 0) {
+      channelGrid.innerHTML = '<p class="col-span-full text-sm text-black/60 dark:text-white/65">No text channels found.</p>';
+      return;
+    }
+
+    channelGrid.innerHTML = channels.map(channel => `
+      <article class="rounded-[1.75rem] border border-black/10 bg-bread-cream/80 p-6 dark:border-white/10 dark:bg-bread-night/80">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="font-semibold text-bread-ink dark:text-bread-cream">#${channel.name}</h3>
+            <p class="mt-2 text-xs text-black/50 dark:text-white/50">ID: ${channel.id}</p>
+          </div>
+          <span class="inline-flex rounded-full bg-white/50 px-3 py-1 text-xs font-bold text-bread-ink dark:bg-bread-charcoal dark:text-bread-cream">Webhook</span>
+        </div>
+        <button type="button" onclick="createWebhook('${channel.id}', '${channel.name}')" class="mt-6 w-full rounded-2xl bg-bread-gold px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#c9a55b] dark:bg-bread-amber dark:hover:bg-[#b8945a]">
+          Create Webhook
+        </button>
+      </article>
+    `).join('');
+  } catch (error) {
+    channelLoadStatus.textContent = `Error: ${error.message}`;
+    channelLoadStatus.className = 'text-sm font-semibold text-rose-600 dark:text-rose-400';
+  }
+}
+
+async function createWebhook(channelId, channelName) {
+  const button = event.target;
+  button.disabled = true;
+  button.textContent = 'Creating...';
+
+  try {
+    const response = await fetch(`/api/guilds/${guildId}/channels/${channelId}/webhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Failed to create webhook');
+    }
+
+    button.textContent = '✓ Created';
+    button.className = 'mt-6 w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white dark:bg-emerald-700';
+    
+    setTimeout(() => loadWebhooks(), 1000);
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+    button.disabled = false;
+    button.textContent = 'Create Webhook';
+  }
+}
+
+async function loadWebhooks() {
+  try {
+    const response = await fetch(`/api/guilds/${guildId}/webhooks`);
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      webhooksList.innerHTML = '<p class="text-sm text-black/60 dark:text-white/65">No webhooks found.</p>';
+      return;
+    }
+
+    const webhooks = data.webhooks || [];
+    
+    if (webhooks.length === 0) {
+      webhooksList.innerHTML = '<p class="text-sm text-black/60 dark:text-white/65">No webhooks created yet. Create one from a channel above.</p>';
+      return;
+    }
+
+    webhooksList.innerHTML = webhooks.map(webhook => `
+      <div class="rounded-2xl border border-black/10 bg-bread-cream/80 p-4 dark:border-white/10 dark:bg-bread-night/80">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="font-semibold text-bread-ink dark:text-bread-cream">${webhook.name || 'Webhook'}</p>
+            <p class="mt-1 text-xs text-black/50 dark:text-white/50">#${webhook.channel_name} • ID: ${webhook.id}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">✓ Active</span>
+            <button type="button" onclick="deleteWebhook('${webhook.id}')" class="rounded-lg bg-rose-100 px-3 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-200 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/50">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch (error) {
+    webhooksList.innerHTML = `<p class="text-sm text-rose-600 dark:text-rose-400">Error: ${error.message}</p>`;
+  }
+}
+
+async function deleteWebhook(webhookId) {
+  if (!confirm('Are you sure you want to delete this webhook?')) return;
+
+  try {
+    const response = await fetch(`/api/webhooks/${webhookId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Failed to delete webhook');
+    }
+
+    loadWebhooks();
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+  }
+}
+
+loadChannels();
+loadWebhooks();
+</script>
+{% endblock %}

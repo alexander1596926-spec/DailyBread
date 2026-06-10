@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -34,7 +35,16 @@ def load_environment_variables() -> None:
     if os.getenv("RENDER"):
         return
 
-    load_dotenv()
+    project_root = Path(__file__).resolve().parents[2]
+    backend_env = project_root / "backend" / ".env"
+    root_env = project_root / ".env"
+
+    if backend_env.exists():
+        load_dotenv(backend_env, override=False)
+    elif root_env.exists():
+        load_dotenv(root_env, override=False)
+    else:
+        load_dotenv(override=False)
 
 
 def configure_logging() -> None:

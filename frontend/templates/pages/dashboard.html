@@ -1,68 +1,176 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="min-h-[calc(100vh-9rem)] bg-white/40 dark:bg-bread-charcoal/30">
-  <div class="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[17rem_1fr] lg:px-8">
-    <aside class="rounded-[1.25rem] border border-black/6 bg-bread-cream p-4 dark:border-white/10 dark:bg-bread-night lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-bread-sage dark:text-bread-amber">Workspace</p>
-          <h1 class="mt-1 text-xl font-extrabold">Dashboard</h1>
-        </div>
-      </div>
-      <div class="mt-6 grid gap-2">
-        <a class="dashboard-nav-link is-active" href="#">Overview</a>
-        <a class="dashboard-nav-link" href="#">Servers</a>
-        <a class="dashboard-nav-link" href="#">Channels</a>
-        <a class="dashboard-nav-link" href="#">Embed Builder</a>
-        <a class="dashboard-nav-link" href="#">Presets</a>
-        <a class="dashboard-nav-link" href="#">Settings</a>
-      </div>
-    </aside>
-
-    <div class="space-y-6">
-      <section class="rounded-[1.5rem] border border-black/6 bg-bread-cream p-5 dark:border-white/10 dark:bg-bread-night sm:p-7">
-        <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+<div class="min-h-[calc(100vh-6rem)] bg-gradient-to-b from-bread-cream/50 to-bread-cream/30 dark:from-bread-night/50 dark:to-bread-night/30 py-8">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <section class="mb-10">
+      <div class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+        <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p class="text-sm font-extrabold uppercase tracking-[0.18em] text-bread-sage dark:text-bread-amber">Foundation</p>
-            <h2 class="mt-2 font-serif text-4xl font-bold text-bread-ink dark:text-bread-cream">Prepare your scripture workspace.</h2>
-            <p class="mt-3 max-w-2xl text-sm leading-6 text-black/62 dark:text-white/62">The dashboard shell is ready for guild selection, channel setup, webhook creation, and embed design.</p>
+            <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-bread-sage dark:text-bread-amber">Dashboard</p>
+            <h1 class="mt-3 font-serif text-4xl font-bold text-bread-ink dark:text-bread-cream sm:text-5xl">Welcome back, {{ user.username }}.</h1>
+            <p class="mt-4 max-w-2xl text-sm leading-6 text-black/65 dark:text-white/70">Select a server to manage Bible verse delivery, set up channels, and create webhooks for DailyBread.</p>
           </div>
-          <a href="/login" class="inline-flex min-h-12 items-center justify-center rounded-full bg-bread-ink px-6 text-sm font-extrabold text-bread-cream dark:bg-bread-cream dark:text-bread-night">Connect Discord</a>
-        </div>
-      </section>
-
-      <section class="grid gap-4 md:grid-cols-3">
-        <article class="dashboard-card">
-          <p class="text-sm font-bold text-black/50 dark:text-white/50">Servers</p>
-          <p class="mt-3 text-3xl font-extrabold">0</p>
-          <p class="mt-2 text-sm text-black/58 dark:text-white/58">Awaiting Discord OAuth.</p>
-        </article>
-        <article class="dashboard-card">
-          <p class="text-sm font-bold text-black/50 dark:text-white/50">Channels</p>
-          <p class="mt-3 text-3xl font-extrabold">0</p>
-          <p class="mt-2 text-sm text-black/58 dark:text-white/58">Ready for future selection.</p>
-        </article>
-        <article class="dashboard-card">
-          <p class="text-sm font-bold text-black/50 dark:text-white/50">Webhooks</p>
-          <p class="mt-3 text-3xl font-extrabold">0</p>
-          <p class="mt-2 text-sm text-black/58 dark:text-white/58">Setup flow coming next.</p>
-        </article>
-      </section>
-
-      <section class="rounded-[1.5rem] border border-black/6 bg-white p-5 shadow-soft dark:border-white/10 dark:bg-bread-charcoal sm:p-7">
-        <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div class="max-w-xl">
-            <h3 class="font-serif text-3xl font-bold text-bread-ink dark:text-bread-cream">Embed preview shell</h3>
-            <p class="mt-3 text-sm leading-6 text-black/62 dark:text-white/62">Future controls will live beside a live preview for scripture text, translation, color, footer, and delivery settings.</p>
-          </div>
-          <div class="w-full max-w-md rounded-2xl border-l-4 border-bread-gold bg-bread-cream p-5 dark:border-bread-amber dark:bg-bread-night">
-            <p class="font-serif text-2xl font-semibold leading-tight">“Be still, and know that I am God.”</p>
-            <p class="mt-4 text-sm font-bold text-bread-sage dark:text-bread-amber">Psalm 46:10</p>
+          <div class="flex flex-col items-center gap-3 rounded-full bg-bread-linen/80 px-5 py-4 dark:bg-bread-night/80">
+            <img src="{{ user.avatar_url }}" alt="{{ user.username }} avatar" class="h-16 w-16 rounded-full border-2 border-bread-gold/50 dark:border-bread-amber/50" />
+            <div class="text-center">
+              <p class="text-xs uppercase tracking-[0.15em] text-black/50 dark:text-white/50">Connected as</p>
+              <p class="font-semibold text-bread-ink dark:text-bread-cream">{{ user.username }}</p>
+            </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
+
+    <!-- Quick Stats -->
+    <section class="mb-10 grid gap-4 sm:grid-cols-3">
+      <article class="dashboard-card">
+        <p class="text-xs font-extrabold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">Total Guilds</p>
+        <p class="mt-4 text-4xl font-extrabold text-bread-ink dark:text-bread-cream">{{ guilds | length }}</p>
+        <p class="mt-2 text-sm text-black/60 dark:text-white/65">Discord servers you can manage.</p>
+      </article>
+      <article class="dashboard-card">
+        <p class="text-xs font-extrabold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">Status</p>
+        <p class="mt-4 text-lg font-semibold text-emerald-600 dark:text-emerald-400">✓ Ready</p>
+        <p class="mt-2 text-sm text-black/60 dark:text-white/65">Your profile is loaded and ready to go.</p>
+      </article>
+      <article class="dashboard-card">
+        <p class="text-xs font-extrabold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">Next Step</p>
+        <p class="mt-4 font-semibold text-bread-ink dark:text-bread-cream">Select Guild</p>
+        <p class="mt-2 text-sm text-black/60 dark:text-white/65">Pick a server below to continue.</p>
+      </article>
+    </section>
+
+    <!-- Guild List -->
+    <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+      <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="font-serif text-3xl font-bold text-bread-ink dark:text-bread-cream">Your Discord Servers</h2>
+          <p class="mt-2 text-sm text-black/65 dark:text-white/70">Click to manage channels, webhooks, and create Bible embeds.</p>
+        </div>
+        <span class="w-fit rounded-full bg-bread-linen px-4 py-2 text-sm font-bold uppercase tracking-[0.15em] text-bread-ink dark:bg-bread-night dark:text-bread-cream">{{ guilds | length }} servers</span>
+      </div>
+
+      {% if guilds %}
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {% for guild in guilds %}
+        <article class="group rounded-[1.75rem] border border-black/10 bg-bread-cream/80 p-6 transition hover:border-bread-gold/50 hover:shadow-lg dark:border-white/10 dark:bg-bread-night/80 dark:hover:border-bread-amber/50\">
+          <!-- Guild Header -->
+          <div class=\"flex items-start justify-between gap-4\">
+            <div class="flex items-center gap-4">
+              <div class="grid h-14 w-14 flex-shrink-0 place-items-center rounded-2xl bg-white/80 text-base font-bold text-bread-ink dark:bg-bread-charcoal">
+                {% if guild.icon_url %}
+                <img src="{{ guild.icon_url }}" alt="{{ guild.name }} icon" class="h-12 w-12 rounded-xl object-cover" />
+                {% else %}
+                <span>{{ guild.name[:2].upper() }}</span>
+                {% endif %}
+              </div>
+              <div class="min-w-0 flex-1">
+                <h3 class="truncate font-semibold text-bread-ink dark:text-bread-cream">{{ guild.name }}</h3>
+                <div class="mt-2 flex items-center gap-2">
+                  {% if guild.is_owner %}
+                  <span class="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">Owner</span>
+                  {% elif guild.is_admin %}
+                  <span class="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">Admin</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bot Status -->
+          <div class="mt-5 rounded-2xl border border-black/10 bg-white/60 p-4 dark:border-white/10 dark:bg-bread-charcoal/60">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-[0.15em] text-black/50 dark:text-white/50">DailyBread Bot</p>
+                <p class="mt-2 font-semibold text-bread-ink dark:text-bread-cream">
+                  {% if guild.has_bot %}
+                  ✓ Connected
+                  {% else %}
+                  ✗ Not Added
+                  {% endif %}
+                </p>
+              </div>
+              <div class="h-3 w-3 rounded-full {% if guild.has_bot %}bg-emerald-500{% else %}bg-amber-500{% endif %}"></div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="mt-6 flex gap-3">
+            {% if guild.has_bot %}
+            <a href="/dashboard/guild/{{ guild.guild_id }}" class="flex-1 rounded-2xl bg-bread-ink px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-black dark:bg-bread-cream dark:text-bread-night dark:hover:bg-white">
+              Manage Server
+            </a>
+            {% else %}
+            <button type="button" class="flex-1 rounded-2xl border-2 border-bread-gold/30 bg-transparent px-4 py-3 text-center text-sm font-semibold text-bread-gold transition hover:bg-bread-gold/10 dark:border-bread-amber/30 dark:text-bread-amber dark:hover:bg-bread-amber/10" onclick="addBotToGuild('{{ guild.guild_id }}')">
+              Add DailyBread
+            </button>
+            {% endif %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="rounded-2xl border-2 border-dashed border-black/15 bg-bread-cream/50 p-8 text-center dark:border-white/15 dark:bg-bread-charcoal/50">
+        <p class="text-sm font-semibold text-black/70 dark:text-white/70">No Discord servers found.</p>
+        <p class="mt-2 text-xs text-black/50 dark:text-white/50">Make sure you're logged in with a Discord account that has servers.</p>
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- Help Section -->
+    <section class="mt-10 rounded-[2rem] border border-black/8 bg-gradient-to-br from-bread-linen/30 to-bread-gold/10 p-6 dark:border-white/10 dark:from-bread-night/80 dark:to-bread-amber/5">
+      <h2 class="font-semibold text-bread-ink dark:text-bread-cream">Getting Started</h2>
+      <ul class="mt-4 space-y-3 text-sm text-black/70 dark:text-white/70">
+        <li class="flex gap-3">
+          <span class="font-bold text-bread-gold dark:text-bread-amber">1.</span>
+          <span>Select a server you own or manage where DailyBread is installed.</span>
+        </li>
+        <li class="flex gap-3">
+          <span class="font-bold text-bread-gold dark:text-bread-amber">2.</span>
+          <span>Choose a text channel to set up a webhook for Bible verse delivery.</span>
+        </li>
+        <li class="flex gap-3">
+          <span class="font-bold text-bread-gold dark:text-bread-amber">3.</span>
+          <span>Create an embed in the builder, customize the scripture, and send it to Discord.</span>
+        </li>
+      </ul>
+    </section>
   </div>
-</section>
+</div>
+
+<script>
+// Frontend Debug: Log normalized guild data
+document.addEventListener('DOMContentLoaded', () => {
+  const guilds = {{ guilds | tojson }};
+  console.log('Frontend: Loaded guilds from backend:', guilds);
+  
+  // Verify field names and boolean types
+  if (guilds && guilds.length > 0) {
+    const firstGuild = guilds[0];
+    console.log('Frontend: First guild fields:', {
+      guild_id: firstGuild.guild_id,
+      name: firstGuild.name,
+      has_bot: typeof firstGuild.has_bot === 'boolean' ? firstGuild.has_bot : 'NOT BOOLEAN',
+      is_admin: typeof firstGuild.is_admin === 'boolean' ? firstGuild.is_admin : 'NOT BOOLEAN',
+      is_owner: typeof firstGuild.is_owner === 'boolean' ? firstGuild.is_owner : 'NOT BOOLEAN',
+    });
+  }
+});
+
+async function addBotToGuild(guildId) {
+  const discordClientId = '{{ discord_client_id }}';
+  if (!discordClientId) {
+    alert('Bot invite is not configured. Please contact the administrator.');
+    return;
+  }
+  // Normalized invite URL with proper permissions and scopes
+  const botInviteUrl = `https://discord.com/oauth2/authorize?client_id=${discordClientId}&permissions=537119808&integration_type=0&scope=bot+applications.commands`;
+  window.open(botInviteUrl, '_blank');
+  
+  // Debug log
+  console.log('Opening bot invite for guild:', guildId);
+}
+</script>
 {% endblock %}

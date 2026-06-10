@@ -9,6 +9,7 @@
       <a href="/" class="nav-link {{ 'is-active' if active_page == 'home' else '' }}">Home</a>
       <a href="/login" class="nav-link {{ 'is-active' if active_page == 'login' else '' }}">Login</a>
       <a href="/dashboard" class="nav-link {{ 'is-active' if active_page == 'dashboard' else '' }}">Dashboard</a>
+      <a href="/dashboard/builder" class="nav-link {{ 'is-active' if active_page == 'builder' else '' }}">Builder</a>
     </div>
 
     <div class="flex items-center gap-2">
@@ -20,7 +21,17 @@
           <path d="M20.5 14.5A7.5 7.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-      <a href="/login" class="hidden min-h-11 items-center rounded-full bg-bread-ink px-5 text-sm font-bold text-bread-cream transition hover:bg-black dark:bg-bread-cream dark:text-bread-night dark:hover:bg-white md:inline-flex">Login with Discord</a>
+
+      {% if user %}
+      <a href="/dashboard" class="hidden min-h-11 items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-sm font-bold text-bread-ink transition hover:border-bread-gold dark:border-white/10 dark:bg-bread-charcoal dark:text-bread-cream md:inline-flex">
+        <img src="{{ user.avatar_url }}" alt="{{ user.username }} avatar" class="h-8 w-8 rounded-full" />
+        <span>{{ user.username }}</span>
+      </a>
+      <a href="/logout" class="hidden min-h-11 items-center justify-center rounded-full bg-bread-ink px-5 text-sm font-bold text-bread-cream transition hover:bg-black dark:bg-bread-cream dark:text-bread-night dark:hover:bg-white md:inline-flex">Logout</a>
+      {% else %}
+      <a href="/login" class="hidden min-h-11 items-center justify-center rounded-full bg-bread-ink px-5 text-sm font-bold text-bread-cream transition hover:bg-black dark:bg-bread-cream dark:text-bread-night dark:hover:bg-white md:inline-flex">Login with Discord</a>
+      {% endif %}
+
       <button type="button" data-menu-toggle class="icon-button md:hidden" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
@@ -34,7 +45,12 @@
       <a href="/" class="mobile-nav-link {{ 'is-active' if active_page == 'home' else '' }}">Home</a>
       <a href="/login" class="mobile-nav-link {{ 'is-active' if active_page == 'login' else '' }}">Login</a>
       <a href="/dashboard" class="mobile-nav-link {{ 'is-active' if active_page == 'dashboard' else '' }}">Dashboard</a>
+      <a href="/dashboard/builder" class="mobile-nav-link {{ 'is-active' if active_page == 'builder' else '' }}">Builder</a>
+      {% if user %}
+      <a href="/logout" class="mt-2 flex min-h-12 items-center justify-center rounded-full bg-bread-ink px-5 text-sm font-bold text-bread-cream dark:bg-bread-cream dark:text-bread-night">Logout</a>
+      {% else %}
       <a href="/login" class="mt-2 flex min-h-12 items-center justify-center rounded-full bg-bread-ink px-5 text-sm font-bold text-bread-cream dark:bg-bread-cream dark:text-bread-night">Login with Discord</a>
+      {% endif %}
     </div>
   </div>
 </header>
