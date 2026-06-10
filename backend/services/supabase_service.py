@@ -12,15 +12,11 @@ for env_path in (BASE_DIR / ".env", BASE_DIR.parent / ".env"):
         load_dotenv(env_path, override=False)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("supabase_url")
-SUPABASE_KEY = (
-    os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-    or os.getenv("SUPABASE_SERVICE_KEY")
+SUPABASE_KEY = (os.getenv("supabase_service_key")
 )
 SUPABASE_KEY_SOURCE = (
     "SERVICE_ROLE"
-    if os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-    else "SERVICE_KEY"
-    if os.getenv("SUPABASE_SERVICE_KEY")
+    if os.getenv("supabase_service_key")
     else "NONE"
 )
 
