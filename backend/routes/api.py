@@ -12,19 +12,23 @@ ADMIN_PERMISSIONS = 0x00000008
 MANAGE_WEBHOOKS = 0x02000000
 
 
+# Error response helper
 def _error(message: str, code: int = status.HTTP_400_BAD_REQUEST) -> JSONResponse:
     return JSONResponse(status_code=code, content={"success": False, "error": message})
 
 
+# Session and Guild Helpers
 def _get_session(request: Request) -> Optional[Dict[str, Any]]:
     session = get_session(request)
     return session if session else None
 
 
+# Guild Searcher - finds the guild in the session by ID
 def _find_guild(session: Dict[str, Any], guild_id: str) -> Optional[Dict[str, Any]]:
     return next((g for g in session.get("guilds", []) if str(g.get("guild_id")) == str(guild_id)), None)
 
 
+# Permission Checker - checks if the user has admin or manage_webhooks permissions for the guild
 def _require_session(request: Request) -> Dict[str, Any]:
     session = _get_session(request)
     if not session:
@@ -32,11 +36,13 @@ def _require_session(request: Request) -> Dict[str, Any]:
     return session
 
 
+# Guild Permission Checker
 def _has_guild_permission(guild: Dict[str, Any]) -> bool:
     # Guild must be admin or owner (already filtered during OAuth sync)
     return guild.get("is_admin", False) or guild.get("is_owner", False)
 
 
+# Color Normalizer - converts hex string or integer to integer color value
 def _normalize_color(color: Any) -> Optional[int]:
     if color is None:
         return None
@@ -53,6 +59,7 @@ def _normalize_color(color: Any) -> Optional[int]:
         return None
 
 
+# Embed Payload Builder - constructs the Discord embed payload from the input data
 def _embed_payload(embed: Dict[str, Any]) -> Dict[str, Any]:
     payload = {
         "embeds": [
@@ -78,6 +85,7 @@ def _embed_payload(embed: Dict[str, Any]) -> Dict[str, Any]:
     return payload
 
 
+# Sync User and Guilds - ensures the user and their guilds are upserted in the database, and returns the normalized guild data for API responses
 def _sync_user_and_guilds(session: Dict[str, Any]) -> Dict[str, Any]:
     user_profile = session["user"]
     user_record = supabase_service.upsert_user_by_discord_id(
@@ -129,6 +137,8 @@ def _sync_user_and_guilds(session: Dict[str, Any]) -> Dict[str, Any]:
     return {"user": user_record, "guilds": synced_guilds}
 
 
+# API Endpoints
+# Guild Endpoints - list guilds, list channels, create webhook, list webhooks, delete webhook
 @api_router.get("/guilds")
 async def get_guilds(request: Request):
     try:
@@ -144,6 +154,7 @@ async def get_guilds(request: Request):
     return {"success": True, "guilds": synced["guilds"]}
 
 
+# Bible Endpoint - search for verse reference and return verse text
 @api_router.get("/bible/search")
 async def bible_search(query: str | None = None):
     if not query or not query.strip():
@@ -164,6 +175,7 @@ async def bible_search(query: str | None = None):
         return _error(str(exc) or "Unable to resolve verse.", status.HTTP_502_BAD_GATEWAY)
 
 
+# Channel Endpoints - list channels for guild, create webhook for channel
 @api_router.get("/guilds/{guild_id}/channels")
 async def get_guild_channels(guild_id: str, request: Request):
     try:
@@ -207,6 +219,7 @@ async def get_guild_channels(guild_id: str, request: Request):
     return {"success": True, "channels": text_channels}
 
 
+# Channel Endpoints - create webhook for channel
 @api_router.post("/guilds/{guild_id}/channels/{channel_id}/webhook")
 async def create_channel_webhook(guild_id: str, channel_id: str, request: Request):
     try:
@@ -244,6 +257,7 @@ async def create_channel_webhook(guild_id: str, channel_id: str, request: Reques
     }
 
 
+# Embeds Endpoint - create embed, list embeds for user, send embed to channel or webhook
 @api_router.post("/embeds")
 async def create_embed(request: Request):
     try:
@@ -271,10 +285,11 @@ async def create_embed(request: Request):
 
     if verse_reference and not verse_text:
         try:
-            verse_text = bible_service.fetch_verse_text(verse_reference)
+            verse_text = bible_service.resolve_verse_reference(verse_reference)
         except Exception as exc:
             return _error(str(exc), status.HTTP_502_BAD_GATEWAY)
 
+    # Supabase upsert user and embed record
     user_profile = session["user"]
     user_record = supabase_service.upsert_user_by_discord_id(
         discord_id=str(user_profile["id"]),
@@ -300,6 +315,7 @@ async def create_embed(request: Request):
     }
 
 
+# List embeds for user
 @api_router.get("/guilds/{guild_id}/webhooks")
 async def get_guild_webhooks(guild_id: str, request: Request):
     try:
@@ -330,6 +346,7 @@ async def get_guild_webhooks(guild_id: str, request: Request):
     return {"success": True, "webhooks": webhook_list}
 
 
+# Delete webhook
 @api_router.delete("/webhooks/{webhook_id}")
 async def delete_webhook(webhook_id: str, request: Request):
     try:

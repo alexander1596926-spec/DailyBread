@@ -8,6 +8,7 @@ import requests
 
 from backend.services.supabase_service import get_bible_cache, store_bible_cache
 
+# Load environment variables from .env file if it exists
 BASE_DIR = Path(__file__).resolve().parent.parent
 for env_path in (BASE_DIR / ".env", BASE_DIR.parent / ".env"):
     if env_path.exists():
@@ -17,6 +18,7 @@ BIBLE_API_KEY = os.getenv("BIBLE_API_KEY") or os.getenv("bible_api_key")
 BIBLE_API_URL = os.getenv("BIBLE_API_URL") or "https://bible-api.com"
 
 
+# Normalizes the response from the Bible API to ensure we have consistent fields for reference, text, and translation.
 def _normalize_bible_response(data: Dict[str, Any], reference: str) -> Dict[str, Optional[str]]:
     text = data.get("text")
     if not text:
@@ -37,6 +39,7 @@ def _normalize_bible_response(data: Dict[str, Any], reference: str) -> Dict[str,
     }
 
 
+# Resolves a verse reference to its text and translation using the Bible API, with caching to reduce API calls.
 def resolve_verse_reference(reference: str) -> Optional[Dict[str, Any]]:
     reference = reference.strip()
     if not reference:

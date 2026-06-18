@@ -30,6 +30,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
+# Supabase Error
 class SupabaseError(Exception):
     pass
 
@@ -41,6 +42,8 @@ def _execute(query: Any) -> Any:
     return getattr(result, "data", None)
 
 
+
+# Retrieves a user by their Discord ID. Returns the user data if found, or None otherwise.
 def get_user_by_discord_id(discord_id: str) -> Optional[Dict[str, Any]]:
     rows = _execute(
         supabase.table("users").select("*").eq("discord_id", discord_id).limit(1)
@@ -48,11 +51,13 @@ def get_user_by_discord_id(discord_id: str) -> Optional[Dict[str, Any]]:
     return rows[0] if rows else None
 
 
+# Retrieves a user ID by their Discord ID. Returns the user ID if found, or None otherwise.
 def get_user_id_by_discord_id(discord_id: str) -> Optional[Any]:
     user = get_user_by_discord_id(discord_id)
     return user.get("id") if user else None
 
 
+# Retrieves a guild by its Discord guild ID. Returns the guild data if found, or None otherwise.
 def get_guild_by_guild_id(guild_id: str) -> Optional[Dict[str, Any]]:
     rows = _execute(
         supabase.table("guilds").select("*").eq("guild_id", guild_id).limit(1)
@@ -60,6 +65,7 @@ def get_guild_by_guild_id(guild_id: str) -> Optional[Dict[str, Any]]:
     return rows[0] if rows else None
 
 
+# Lists all guilds that the specified user is a member of, along with their permissions and whether they are the owner. Returns a list of guild data dictionaries.
 def get_user_guilds(user_id: Any) -> List[Dict[str, Any]]:
     rows = _execute(
         supabase.table("user_guilds").select("*").eq("user_id", user_id)
@@ -84,6 +90,7 @@ def get_user_guilds(user_id: Any) -> List[Dict[str, Any]]:
     return guilds
 
 
+# Retrieves a user's membership information for a specific guild, including their permissions and whether they are the owner. Returns the membership data if found, or None otherwise.
 def get_user_guild(user_id: Any, guild_id: str) -> Optional[Dict[str, Any]]:
     rows = _execute(
         supabase.table("user_guilds")
@@ -95,11 +102,13 @@ def get_user_guild(user_id: Any, guild_id: str) -> Optional[Dict[str, Any]]:
     return rows[0] if rows else None
 
 
+# Checks if the user has access to the specified guild by verifying their membership and permissions. Returns True if the user is the owner or has admin permissions, False otherwise.
 def user_has_guild_access(user_id: Any, guild_id: str) -> bool:
     guild = get_user_guild(user_id, guild_id)
     return bool(guild and (guild.get("is_owner") or guild.get("is_admin")))
 
 
+# Upserts a user by their Discord ID. Returns the upserted user data. If the user already exists, their information will be updated with the provided data. If the user does not exist, a new record will be created.
 def upsert_user_by_discord_id(
     discord_id: str,
     username: str = "",
@@ -125,6 +134,7 @@ def upsert_user_by_discord_id(
     return rows[0]
 
 
+# Creates a new embed record and returns the created embed data.
 def create_embed(
     creator_id: Any,
     title: str,
@@ -151,11 +161,13 @@ def create_embed(
     return rows[0]
 
 
+# Retrieves an embed by its ID. Returns the embed data if found, or None otherwise.
 def get_embed_by_id(embed_id: str) -> Optional[Dict[str, Any]]:
     rows = _execute(supabase.table("embeds").select("*").eq("id", embed_id).limit(1))
     return rows[0] if rows else None
 
 
+# Upserts a guild by its ID. Returns the upserted guild data. If the guild already exists, its information will be updated with the provided data. If the guild does not exist, a new record will be created.
 def upsert_guild(
     guild_id: str,
     name: str,
@@ -184,6 +196,7 @@ def upsert_guild(
     return rows[0]
 
 
+# Upserts a user's membership in a guild with their permissions and ownership status. 
 def ensure_user_guild(
     user_id: Any,
     guild_id: str,
@@ -207,6 +220,7 @@ def ensure_user_guild(
     return rows[0]
 
 
+# Upserts a list of channels. Each channel should have a unique discord_id. Returns the list of upserted channel data.
 def upsert_channels(channels: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if not channels:
         return []
@@ -218,6 +232,7 @@ def upsert_channels(channels: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return rows or []
 
 
+# Creates a new webhook record and returns the created webhook data.
 def create_webhook_record(webhook: Dict[str, Any]) -> Dict[str, Any]:
     record = {
         "discord_id": str(webhook.get("id") or webhook.get("discord_id")),
@@ -234,6 +249,7 @@ def create_webhook_record(webhook: Dict[str, Any]) -> Dict[str, Any]:
     return rows[0]
 
 
+# Lists all embeds created by the specified user, identified by their Discord ID. Returns a list of embed data dictionaries.
 def list_embeds_for_user(user_id: Any) -> List[Dict[str, Any]]:
     rows = _execute(
         supabase.table("embeds").select("*").eq("creator_id", user_id).order("created_at", desc=True)
@@ -241,6 +257,7 @@ def list_embeds_for_user(user_id: Any) -> List[Dict[str, Any]]:
     return rows or []
 
 
+# Retrieves a webhook record by its Discord ID. Returns the webhook data if found, or None if not found.
 def get_webhook_by_id(webhook_id: str) -> Optional[Dict[str, Any]]:
     rows = _execute(
         supabase.table("webhooks").select("*").eq("discord_id", webhook_id).limit(1)
@@ -248,6 +265,7 @@ def get_webhook_by_id(webhook_id: str) -> Optional[Dict[str, Any]]:
     return rows[0] if rows else None
 
 
+# Retrieves all webhooks associated with a specific channel Discord ID. Returns a list of webhook data dictionaries.
 def get_webhooks_for_channel(channel_discord_id: str) -> List[Dict[str, Any]]:
     rows = _execute(
         supabase.table("webhooks").select("*").eq("channel_discord_id", channel_discord_id)
@@ -255,6 +273,7 @@ def get_webhooks_for_channel(channel_discord_id: str) -> List[Dict[str, Any]]:
     return rows or []
 
 
+# Retrieves all webhooks associated with a specific guild Discord ID. Returns a list of webhook data dictionaries.
 def get_webhooks_for_guild(guild_discord_id: str) -> List[Dict[str, Any]]:
     rows = _execute(
         supabase.table("webhooks").select("*").eq("guild_discord_id", guild_discord_id)
@@ -262,6 +281,7 @@ def get_webhooks_for_guild(guild_discord_id: str) -> List[Dict[str, Any]]:
     return rows or []
 
 
+# Creates a new embed send record and returns the created embed send data. This is used to log each attempt to send an embed, including the target webhook/guild/channel, whether it was successful, and any response or error information.
 def log_embed_send(
     embed_id: Any,
     webhook_discord_id: Any,
@@ -287,6 +307,7 @@ def log_embed_send(
     return rows[0]
 
 
+# Retrieves a Bible cache record by its reference. Returns the Bible cache data if found, or None if not found. 
 def get_bible_cache(reference: str) -> Optional[Dict[str, Any]]:
     rows = _execute(
         supabase.table("bible_cache").select("*").eq("reference", reference).limit(1)
@@ -294,6 +315,7 @@ def get_bible_cache(reference: str) -> Optional[Dict[str, Any]]:
     return rows[0] if rows else None
 
 
+# Upserts a Bible cache record. Returns the upserted Bible cache data.
 def store_bible_cache(reference: str, text: str, translation: Optional[str] = None) -> Dict[str, Any]:
     record = {
         "reference": reference,
@@ -303,11 +325,12 @@ def store_bible_cache(reference: str, text: str, translation: Optional[str] = No
     }
     print("UPSERT BIBLE_CACHE", record)
     rows = _execute(
-        supabase.table("bible_cache").upsert(record, on_conflict="reference,translation").select("*")
+        supabase.table("bible_cache").upsert(record, on_conflict="updated_at").select("*")
     )
     print("SUPABASE BIBLE_CACHE RESPONSE", rows)
     return rows[0]
 
 
+# Deletes a webhook record by its Discord ID.
 def delete_webhook(webhook_id: Any) -> None:
     _execute(supabase.table("webhooks").delete().eq("discord_id", webhook_id))

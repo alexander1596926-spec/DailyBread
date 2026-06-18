@@ -5,6 +5,7 @@ from backend.services import bible_service, supabase_service
 from backend.services.webhook_sender import build_payload_from_embed, send_webhook
 
 
+# Embed Payload Builder - constructs the JSON payload to send to Discord webhooks based on the embed data and optional Bible verse information.
 def create_embed_for_user(
     user_discord_id: str,
     title: str,
@@ -26,6 +27,7 @@ def create_embed_for_user(
     return embed
 
 
+# Retrieves an embed by its ID and verifies that it belongs to the specified user. Returns the embed data if found and authorized, or None otherwise.
 def get_embed_for_user(embed_id: str, user_discord_id: str) -> Optional[Dict[str, Any]]:
     embed = supabase_service.get_embed_by_id(embed_id)
     if not embed:
@@ -35,6 +37,7 @@ def get_embed_for_user(embed_id: str, user_discord_id: str) -> Optional[Dict[str
     return embed
 
 
+# Lists all embeds created by the specified user, identified by their Discord ID. Returns a list of embed data dictionaries.
 def list_embeds_for_user(user_discord_id: str) -> List[Dict[str, Any]]:
     user_id = supabase_service.get_user_id_by_discord_id(user_discord_id)
     if not user_id:
@@ -42,6 +45,7 @@ def list_embeds_for_user(user_discord_id: str) -> List[Dict[str, Any]]:
     return supabase_service.list_embeds_for_user(user_id)
 
 
+# Sends an embed to the specified Discord webhook, channel, or guild. Validates that the embed belongs to the user and that the user has permission to send to the target. Returns a success status and any error messages.
 async def send_embed(
     embed_id: str,
     user_discord_id: str,
@@ -97,6 +101,7 @@ async def send_embed(
     if channel_id and any(str(webhook.get("channel_discord_id")) != str(channel_id) for webhook in webhooks):
         return {"success": False, "error": "Selected webhook does not belong to the requested channel."}
 
+    print("RAW EMBED COLOR:", embed.get("color"))
     payload = build_payload_from_embed(embed, bible_data)
     results: List[Dict[str, Any]] = []
     for webhook in webhooks:
@@ -111,6 +116,7 @@ async def send_embed(
             response_text=result.get("response_text"),
             error=result.get("error"),
         )
+        print("PAYLOAD COLOR:", payload["embeds"][0].get("color"))
         results.append(result)
 
     all_success = all(item.get("success") for item in results)

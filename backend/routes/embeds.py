@@ -10,10 +10,12 @@ from backend.services.embed_service import create_embed_for_user, get_embed_for_
 router = APIRouter()
 
 
+# Error response helper
 def _error(message: str, code: int = status.HTTP_400_BAD_REQUEST) -> JSONResponse:
     return JSONResponse(status_code=code, content={"success": False, "error": message})
 
 
+# Authentication helper
 def _require_session(request: Request) -> Dict[str, Any]:
     session = get_session(request)
     if not session:
@@ -21,10 +23,12 @@ def _require_session(request: Request) -> Dict[str, Any]:
     return session
 
 
+# Permission helper
 def _requires_guild_membership(session: Dict[str, Any], guild_id: str) -> bool:
     return any(str(g.get("id")) == str(guild_id) for g in session.get("guilds", []))
 
 
+# Route handlers for embeds endpoint - create, list, send
 @router.post("/")
 async def create_embed(request: Request):
     try:
@@ -66,6 +70,7 @@ async def create_embed(request: Request):
     return {"success": True, "embed_id": str(embed.get("id")), "embed": embed}
 
 
+# List embeds for the authenticated user - only returns embeds created by the user
 @router.get("/")
 async def list_embeds(request: Request):
     try:
@@ -77,6 +82,7 @@ async def list_embeds(request: Request):
     return {"success": True, "embeds": embeds}
 
 
+# Get a specific embed by ID, only if it belongs to the authenticated user
 @router.get("/{embed_id}")
 async def get_embed(embed_id: str, request: Request):
     try:
@@ -91,6 +97,7 @@ async def get_embed(embed_id: str, request: Request):
     return {"success": True, "embed": embed}
 
 
+# Send an embed to a specified guild/channel/webhook - user must have permission to send to the target
 @router.post("/{embed_id}/send")
 async def send_embed_route(embed_id: str, request: Request):
     try:

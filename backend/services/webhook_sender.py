@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 
+# This module provides functionality to send messages to Discord webhooks, including error handling and payload construction.
 class WebhookSenderError(Exception):
     def __init__(self, message: str, status_code: Optional[int] = None, response_text: Optional[str] = None):
         super().__init__(message)
@@ -10,6 +11,7 @@ class WebhookSenderError(Exception):
         self.response_text = response_text
 
 
+# Normalizes color input to an integer. Accepts integers, hex strings (with or without #), or None.
 def _normalize_color(color: Optional[int]) -> int:
     if color is None:
         return 0
@@ -21,11 +23,12 @@ def _normalize_color(color: Optional[int]) -> int:
         return 0
 
 
+# Builds the payload for the Discord webhook based on the provided embed and optional Bible data.
 def build_payload_from_embed(embed: Dict[str, Any], bible_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     embed_payload: Dict[str, Any] = {
         "title": embed.get("title", ""),
         "description": embed.get("description", ""),
-        "color": _normalize_color(embed.get("color")),
+        "color": embed.get("color"),
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }
 
@@ -45,6 +48,7 @@ def build_payload_from_embed(embed: Dict[str, Any], bible_data: Optional[Dict[st
     return {"embeds": [embed_payload]}
 
 
+# Constructs the full Discord webhook URL from the stored webhook record. Raises an error if required information is missing.
 def _build_webhook_url(webhook: Dict[str, Any]) -> str:
     webhook_id = webhook.get("discord_id")
     token = webhook.get("token")
@@ -53,6 +57,7 @@ def _build_webhook_url(webhook: Dict[str, Any]) -> str:
     return f"https://discord.com/api/webhooks/{webhook_id}/{token}"
 
 
+# Masks the webhook URL for logging purposes to avoid exposing sensitive information.
 def _mask_webhook_url(url: str) -> str:
     try:
         parts = url.split("/")
@@ -63,6 +68,7 @@ def _mask_webhook_url(url: str) -> str:
     return "<masked_webhook_url>"
 
 
+# Generates a user-friendly error message based on the HTTP status code returned by Discord.
 def _discord_error_message(status_code: int, response_text: str) -> str:
     if status_code == 404:
         return "Discord webhook not found or invalid."
@@ -73,6 +79,7 @@ def _discord_error_message(status_code: int, response_text: str) -> str:
     return f"Discord webhook failed with status {status_code}."
 
 
+# Asynchronously sends a payload to the specified Discord webhook URL and returns a record of the delivery attempt, including success status and any error messages.
 async def send_webhook(webhook: Dict[str, Any], payload: Dict[str, Any]) -> Dict[str, Any]:
     try:
         url = _build_webhook_url(webhook)
