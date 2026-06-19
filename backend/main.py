@@ -38,6 +38,7 @@ app.include_router(routes_router)
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
+# pylint: disable=too-many-arguments
 def build_template_context(request: Request, extra: dict | None = None) -> dict:
     session = get_session(request)
     context = {
@@ -50,6 +51,7 @@ def build_template_context(request: Request, extra: dict | None = None) -> dict:
     return context
 
 
+# pylint: disable=invalid-name 
 def _get_user_guilds_from_db(session: dict) -> list[dict]:
     user_record = supabase_service.get_user_by_discord_id(str(session["user"]["id"]))
     if not user_record:
@@ -61,6 +63,7 @@ def _get_user_guilds_from_db(session: dict) -> list[dict]:
     return guilds
 
 
+# pylint: disable=invalid-name
 @app.get("/", response_class=HTMLResponse)
 async def landing_page(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
@@ -70,6 +73,7 @@ async def landing_page(request: Request) -> HTMLResponse:
     )
 
 
+# pylint: disable=invalid-name
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request) -> HTMLResponse:
     session = get_session(request)
@@ -83,6 +87,7 @@ async def login_page(request: Request) -> HTMLResponse:
     )
 
 
+# pylint: disable=invalid-name
 @app.get("/login/discord")
 def login_discord(request: Request) -> RedirectResponse:
     state = secrets.token_urlsafe(16)
@@ -100,6 +105,7 @@ def login_discord(request: Request) -> RedirectResponse:
     return response
 
 
+# pylint: disable=invalid-name
 @app.get("/callback")
 def oauth_callback(request: Request, code: str | None = None, state: str | None = None) -> RedirectResponse:
     if not code or not state:
@@ -231,6 +237,7 @@ def oauth_callback(request: Request, code: str | None = None, state: str | None 
     return response
 
 
+# Dashboard
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_page(request: Request) -> HTMLResponse:
     session = get_session(request)
@@ -250,6 +257,7 @@ async def dashboard_page(request: Request) -> HTMLResponse:
     )
 
 
+# Guild management 
 @app.get("/dashboard/guild/{guild_id}", response_class=HTMLResponse)
 async def guild_management_page(request: Request, guild_id: str) -> HTMLResponse:
     session = get_session(request)
@@ -273,6 +281,7 @@ async def guild_management_page(request: Request, guild_id: str) -> HTMLResponse
     )
 
 
+# Guild builder 
 @app.get("/dashboard/guild/{guild_id}/builder", response_class=HTMLResponse)
 async def guild_builder_page(request: Request, guild_id: str) -> HTMLResponse:
     session = get_session(request)
@@ -296,6 +305,7 @@ async def guild_builder_page(request: Request, guild_id: str) -> HTMLResponse:
     )
 
 
+# Global Editor
 @app.get("/dashboard/builder", response_class=HTMLResponse)
 async def builder_page(request: Request) -> HTMLResponse:
     session = get_session(request)
@@ -315,6 +325,7 @@ async def builder_page(request: Request) -> HTMLResponse:
     )
 
 
+# Logout
 @app.get("/logout")
 def logout(request: Request) -> RedirectResponse:
     response = RedirectResponse(url="/")
@@ -323,6 +334,7 @@ def logout(request: Request) -> RedirectResponse:
     return response
 
 
+# Health check endpoint to verify that the server is running and responsive. Returns a simple JSON object indicating status.
 @app.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
