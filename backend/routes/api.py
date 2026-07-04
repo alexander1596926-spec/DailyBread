@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
@@ -74,6 +74,14 @@ def _embed_payload(embed: Dict[str, Any]) -> Dict[str, Any]:
     if footer:
         payload["embeds"][0]["footer"] = {"text": footer}
 
+    image_url = embed.get("image_url")
+    if image_url:
+        payload["embeds"][0]["image"] = {"url": image_url}
+
+    message_content = embed.get("message_content")
+    if message_content:
+        payload["content"] = str(message_content)
+
     if embed.get("verse_reference") and embed.get("verse_text"):
         payload["embeds"][0]["fields"] = [
             {
@@ -137,6 +145,212 @@ def _sync_user_and_guilds(session: Dict[str, Any]) -> Dict[str, Any]:
     return {"user": user_record, "guilds": synced_guilds}
 
 
+def _validate_container_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(payload, dict):
+        raise ValueError("container_json must be an object.")
+
+    flags = payload.get("flags", 32768)
+    if flags != 32768:
+        raise ValueError("Container payload must use Discord Components V2 flags 32768.")
+
+    components = payload.get("components")
+    if not isinstance(components, list) or not components:
+        raise ValueError("Container payload must include at least one component.")
+
+    def _walk(component: Any) -> bool:
+        if not isinstance(component, dict):
+            return False
+        component_type = component.get("type")
+        if component_type == 17:
+            return True
+        if component_type == 10:
+            return True
+        nested = component.get("components")
+        if isinstance(nested, list):
+            for child in nested:
+                if _walk(child):
+                    return True
+        return False
+
+    has_container = False
+    has_text_display = False
+    for component in components:
+        if not isinstance(component, dict):
+            continue
+        component_type = component.get("type")
+        if component_type == 17:
+            has_container = True
+        if component_type == 10:
+            has_text_display = True
+        nested = component.get("components")
+        if isinstance(nested, list):
+            for child in nested:
+                child_type = child.get("type") if isinstance(child, dict) else None
+                if child_type == 17:
+                    has_container = True
+                if child_type == 10:
+                    has_text_display = True
+
+    if not has_container:
+        raise ValueError("Container payload must include a root container (type 17).")
+    if not has_text_display:
+        raise ValueError("Container payload must include at least one TextDisplay (type 10).")
+
+    return payload
+
+
+def _container_payload_for_send(payload: Dict[str, Any]) -> Dict[str, Any]:
+    validated = _validate_container_payload(payload)
+    return {"flags": 32768, "components": validated.get("components", [])}
+
+
+@api_router.post("/containers/create")
+async def create_container(payload: Dict[str, Any], request: Request):
+    try:
+        session = _require_session(request)
+    except ValueError as exc:
+        return _error(str(exc), status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        container_json = _validate_container_payload(payload.get("container_json") or payload)
+    except ValueError as exc:
+        return _error(str(exc), status.HTTP_400_BAD_REQUEST)
+
+    guild_id = str(payload.get("guild_discord_id") or "").strip()
+    channel_id = str(payload.get("channel_discord_id") or "").strip()
+
+    if guild_id:
+        guild = _find_guild(session, guild_id)
+        if not guild:
+            return _error("Guild not found in your Discord session.", status.HTTP_403_FORBIDDEN)
+        if not _has_guild_permission(guild):
+            return _error("Insufficient permissions for this guild.", status.HTTP_403_FORBIDDEN)
+
+    if channel_id and guild_id:
+        channel = supabase_service.get_channel_by_discord_id(channel_id)
+        if not channel or str(channel.get("guild_discord_id") or "") != guild_id:
+            return _error("Channel does not belong to the selected guild.", status.HTTP_400_BAD_REQUEST)
+
+    user_id = session["user"].get("id")
+    row = supabase_service.create_container(
+        creator_id=user_id,
+        container_json=container_json,
+        guild_discord_id=guild_id or None,
+        channel_discord_id=channel_id or None,
+    )
+    return {"success": True, "container_id": row.get("id")}
+
+
+@api_router.get("/containers")
+async def list_containers(request: Request, guild_id: str | None = None):
+    try:
+        session = _require_session(request)
+    except ValueError as exc:
+        return _error(str(exc), status.HTTP_401_UNAUTHORIZED)
+
+    if guild_id:
+        guild = _find_guild(session, guild_id)
+        if not guild:
+            return _error("Guild not found in your Discord session.", status.HTTP_403_FORBIDDEN)
+        if not _has_guild_permission(guild):
+            return _error("Insufficient permissions for this guild.", status.HTTP_403_FORBIDDEN)
+        rows = supabase_service.list_containers_for_guild(str(guild_id))
+    else:
+        rows = supabase_service.list_containers_for_user(session["user"].get("id"))
+
+    return {"success": True, "containers": rows}
+
+
+@api_router.get("/containers/{container_id}")
+async def get_container(container_id: str, request: Request):
+    try:
+        session = _require_session(request)
+    except ValueError as exc:
+        return _error(str(exc), status.HTTP_401_UNAUTHORIZED)
+
+    container = supabase_service.get_container_by_id(container_id)
+    if not container:
+        return _error("Container not found.", status.HTTP_404_NOT_FOUND)
+
+    user_id = str(session["user"].get("id"))
+    creator_id = str(container.get("creator_id") or "")
+    guild_id = str(container.get("guild_discord_id") or "")
+
+    if creator_id != user_id:
+        if not guild_id:
+            return _error("Container not found or access denied.", status.HTTP_403_FORBIDDEN)
+        guild = _find_guild(session, guild_id)
+        if not guild or not _has_guild_permission(guild):
+            return _error("Container not found or access denied.", status.HTTP_403_FORBIDDEN)
+
+    return {"success": True, "container": container}
+
+
+@api_router.put("/containers/{container_id}")
+async def update_container(container_id: str, payload: Dict[str, Any], request: Request):
+    try:
+        session = _require_session(request)
+    except ValueError as exc:
+        return _error(str(exc), status.HTTP_401_UNAUTHORIZED)
+
+    existing = supabase_service.get_container_by_id(container_id)
+    if not existing:
+        return _error("Container not found.", status.HTTP_404_NOT_FOUND)
+
+    try:
+        container_json = _validate_container_payload(payload.get("container_json") or payload)
+    except ValueError as exc:
+        return _error(str(exc), status.HTTP_400_BAD_REQUEST)
+
+    row = supabase_service.update_container(
+        container_id,
+        container_json=container_json,
+        guild_discord_id=str(payload.get("guild_discord_id") or existing.get("guild_discord_id") or ""),
+        channel_discord_id=str(payload.get("channel_discord_id") or existing.get("channel_discord_id") or ""),
+    )
+    return {"success": True, "container": row}
+
+
+@api_router.post("/containers/{container_id}/send")
+async def send_container(container_id: str, request: Request):
+    try:
+        session = _require_session(request)
+    except ValueError as exc:
+        return _error(str(exc), status.HTTP_401_UNAUTHORIZED)
+
+    container = supabase_service.get_container_by_id(container_id)
+    if not container:
+        return _error("Container not found.", status.HTTP_404_NOT_FOUND)
+
+    guild_id = container.get("guild_discord_id")
+    if not guild_id:
+        return _error("Container is missing a guild.", status.HTTP_400_BAD_REQUEST)
+
+    guild = _find_guild(session, str(guild_id))
+    if not guild:
+        return _error("Guild not found in your Discord session.", status.HTTP_403_FORBIDDEN)
+    if not _has_guild_permission(guild):
+        return _error("Insufficient permissions for this guild.", status.HTTP_403_FORBIDDEN)
+
+    try:
+        _validate_container_payload(container.get("container_json"))
+    except ValueError as exc:
+        return _error(str(exc), status.HTTP_400_BAD_REQUEST)
+
+    webhook = None
+    channel_id = container.get("channel_discord_id")
+    if channel_id:
+        webhooks = supabase_service.get_webhooks_for_channel(str(channel_id))
+        webhook = webhooks[0] if webhooks else None
+
+    if not webhook:
+        return _error("No webhook is configured for the selected channel.", status.HTTP_404_NOT_FOUND)
+
+    payload = _container_payload_for_send(container.get("container_json"))
+    result = supabase_service.send_container_via_webhook(container, webhook, payload)
+    return {"success": bool(result.get("success")), **result}
+
+
 # API Endpoints
 # Guild Endpoints - list guilds, list channels, create webhook, list webhooks, delete webhook
 @api_router.get("/guilds")
@@ -146,12 +360,16 @@ async def get_guilds(request: Request):
     except ValueError as exc:
         return _error(str(exc), status.HTTP_401_UNAUTHORIZED)
 
-    synced = _sync_user_and_guilds(session)
-    
-    # Debug: log normalized API response
-    print("DEBUG: Normalized API response guilds:", synced["guilds"])
-    
-    return {"success": True, "guilds": synced["guilds"]}
+    user_record = supabase_service.get_user_by_discord_id(str(session["user"]["id"]))
+    if not user_record:
+        synced = _sync_user_and_guilds(session)
+        return {"success": True, "guilds": synced["guilds"]}
+
+    guilds = supabase_service.get_user_guilds(user_record["id"])
+    for guild in guilds:
+        guild["icon_url"] = build_guild_icon_url({"id": guild.get("guild_id"), "icon": guild.get("icon")})
+
+    return {"success": True, "guilds": guilds}
 
 
 # Bible Endpoint - search for verse reference and return verse text
@@ -170,6 +388,7 @@ async def bible_search(query: str | None = None):
             "reference": verse.get("reference"),
             "text": verse.get("text"),
             "translation": verse.get("translation"),
+            "translation_label": verse.get("translation_label") or verse.get("translation"),
         }
     except Exception as exc:
         return _error(str(exc) or "Unable to resolve verse.", status.HTTP_502_BAD_GATEWAY)
@@ -274,10 +493,12 @@ async def create_embed(request: Request):
     verse_reference = str(data.get("verse_reference", "")).strip()
     verse_text = str(data.get("verse_text", "")).strip()
     footer = str(data.get("footer", "")).strip()
+    message_content = str(data.get("message_content", "")).strip()
+    image_url = str(data.get("image_url", "")).strip()
     color_value = data.get("color")
 
-    if not title or not description:
-        return _error("Embed title and description are required.", status.HTTP_400_BAD_REQUEST)
+    if not title and not description and not message_content:
+        return _error("Message content, embed title, or embed description is required.", status.HTTP_400_BAD_REQUEST)
 
     normalized_color = _normalize_color(color_value)
     if color_value is not None and normalized_color is None:
@@ -285,7 +506,8 @@ async def create_embed(request: Request):
 
     if verse_reference and not verse_text:
         try:
-            verse_text = bible_service.resolve_verse_reference(verse_reference)
+            bible_data = bible_service.resolve_verse_reference(verse_reference)
+            verse_text = bible_data.get("text") if bible_data else ""
         except Exception as exc:
             return _error(str(exc), status.HTTP_502_BAD_GATEWAY)
 
@@ -306,6 +528,8 @@ async def create_embed(request: Request):
         verse_text=verse_text or None,
         footer=footer or None,
         color=normalized_color,
+        message_content=message_content or None,
+        image_url=image_url or None,
     )
 
     return {

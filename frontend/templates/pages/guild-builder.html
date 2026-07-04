@@ -5,7 +5,7 @@
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <!-- Breadcrumb & Header -->
     <div class="mb-8 flex flex-col gap-4">
-      <a href="/dashboard/guild/{{ guild.guild_id }}" class="w-fit text-sm font-semibold text-bread-gold transition hover:text-bread-ink dark:text-bread-amber dark:hover:text-bread-cream">← Back to Server</a>
+      <a href="/dashboard/guild/{{ guild.guild_id }}" class="w-fit text-sm font-semibold text-bread-gold transition hover:text-bread-ink dark:text-bread-amber dark:hover:text-bread-cream">Back to Server</a>
 
       <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
         <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -29,7 +29,7 @@
           </div>
 
           <div class="grid gap-3 sm:grid-cols-[1fr_auto]">
-            <input id="verse-search-input" type="text" placeholder="e.g., John 3:16, Psalm 23" class="w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream" />
+            <input id="verse-search-input" type="text" placeholder="e.g., John 3:16, Psalm 23, or NLT/NKJV/NIV 1 Corinthians 16:14" class="w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream" />
             <button id="verse-search-button" type="button" class="rounded-2xl bg-bread-gold px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#c9a55b] dark:bg-bread-amber dark:hover:bg-[#b8945a]">Search</button>
           </div>
 
@@ -45,6 +45,20 @@
             </div>
             <p id="verse-translation" class="mt-4 text-xs uppercase tracking-[0.15em] text-black/45 dark:text-white/45"></p>
             <p id="verse-text" class="mt-4 text-base leading-7 text-black/75 dark:text-white/70"></p>
+          </div>
+        </section>
+
+        <!-- Editor Mode -->
+        <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="font-serif text-2xl font-bold text-bread-ink dark:text-bread-cream">Editor Mode</h2>
+              <p class="mt-2 text-sm text-black/65 dark:text-white/70">Basic editor is available now. Advanced editor is prepared for a future release.</p>
+            </div>
+            <div class="inline-flex rounded-full border border-bread-border bg-bread-background p-1">
+              <button type="button" class="rounded-full bg-bread-ink px-4 py-2 text-sm font-bold text-white dark:bg-bread-accent dark:text-bread-background">Basic</button>
+              <button type="button" disabled class="rounded-full px-4 py-2 text-sm font-bold text-bread-muted opacity-70">Advanced Soon</button>
+            </div>
           </div>
         </section>
 
@@ -67,6 +81,11 @@
 
           <div class="space-y-5">
             <div>
+              <label class="block text-sm font-semibold text-bread-ink dark:text-bread-cream">Message Content</label>
+              <textarea id="message-content" rows="3" placeholder="Optional Discord message text outside the embed" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base leading-7 text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream"></textarea>
+            </div>
+
+            <div>
               <label class="block text-sm font-semibold text-bread-ink dark:text-bread-cream">Title</label>
               <input id="embed-title" type="text" value="DailyBread" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream" />
             </div>
@@ -87,9 +106,15 @@
               </div>
             </div>
 
+            <div>
+              <label class="block text-sm font-semibold text-bread-ink dark:text-bread-cream">Embed Image URL</label>
+              <input id="embed-image-url" type="url" placeholder="https://example.com/image.png" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream" />
+            </div>
+
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
                 <label class="block text-sm font-semibold text-bread-ink dark:text-bread-cream">Channel</label>
+                <input id="channel-search-input" type="text" placeholder="Search channels..." class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream" />
                 <select id="builder-channel-id" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream">
                   <option value="">Select a channel</option>
                 </select>
@@ -111,9 +136,12 @@
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="text-sm font-semibold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">Ready</p>
-              <h3 class="mt-2 font-semibold text-bread-ink dark:text-bread-cream">Send to Discord</h3>
+              <h3 class="mt-2 font-semibold text-bread-ink dark:text-bread-cream">Save and send Components V2</h3>
             </div>
-            <button id="send-button" type="button" class="rounded-2xl bg-bread-ink px-6 py-4 text-sm font-semibold text-white transition hover:bg-black dark:bg-bread-cream dark:text-bread-night dark:hover:bg-white">Send Embed</button>
+            <div class="flex flex-wrap gap-3">
+              <button id="save-button" type="button" class="rounded-2xl border border-bread-border bg-bread-background px-6 py-4 text-sm font-semibold text-bread-ink transition hover:bg-bread-hover">Save Container</button>
+              <button id="send-button" type="button" class="rounded-2xl bg-bread-ink px-6 py-4 text-sm font-semibold text-white transition hover:bg-black dark:bg-bread-cream dark:text-bread-night dark:hover:bg-white">Send Container</button>
+            </div>
           </div>
           <div id="builder-status" class="mt-4 min-h-[1.5rem] text-sm text-bread-ink/75 dark:text-white/75"></div>
         </div>
@@ -124,10 +152,12 @@
         <h2 class="font-serif text-2xl font-bold text-bread-ink dark:text-bread-cream">Live Preview</h2>
         <p class="mt-2 text-sm text-black/65 dark:text-white/70">Embed will appear below.</p>
 
-        <div id="embed-preview" class="mt-6 rounded-2xl border border-black/10 bg-bread-cream p-5 shadow-sm dark:border-white/10 dark:bg-bread-night">
+        <div id="embed-preview" class="mt-6 rounded-2xl border border-black/10 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-bread-night">
+          <p id="preview-message-content" class="mb-4 hidden text-base leading-7 text-bread-ink dark:text-bread-cream"></p>
           <div id="preview-color-bar" class="h-1 rounded-full bg-bread-gold"></div>
           <h3 id="preview-title" class="mt-5 text-xl font-semibold text-bread-ink dark:text-bread-cream">DailyBread</h3>
           <p id="preview-description" class="mt-4 text-base leading-7 text-black/75 dark:text-white/70">Start typing to see your devotional embed appear here.</p>
+          <img id="preview-image" src="" alt="" class="mt-5 hidden w-full rounded-xl border border-black/10 object-cover dark:border-white/10" />
           <div id="preview-verse" class="mt-5 rounded-2xl border border-black/10 bg-white p-4 text-sm text-black/80 dark:border-white/10 dark:bg-bread-charcoal dark:text-white/70 hidden"></div>
           <p id="preview-footer" class="mt-6 text-sm font-semibold uppercase tracking-[0.15em] text-black/45 dark:text-white/45">DailyBread</p>
         </div>
@@ -138,15 +168,18 @@
 
 <script>
 const guildId = '{{ guild.guild_id }}';
+const selectedChannelId = '{{ selected_channel_id }}';
 const state = {
   verse: null,
   draft: {
+    message_content: '',
     title: 'DailyBread',
     description: '',
     color: '#D6B36A',
     footer: 'DailyBread',
+    image_url: '',
     verse_reference: '',
-    channel_id: '',
+    channel_id: selectedChannelId,
     webhook_id: '',
   },
   savedEmbedId: null,
@@ -162,21 +195,29 @@ const verseReference = getEl('#verse-reference');
 const verseTranslation = getEl('#verse-translation');
 const verseText = getEl('#verse-text');
 const useVerseButton = getEl('#use-verse-button');
+const messageContent = getEl('#message-content');
 const embedTitle = getEl('#embed-title');
 const embedDescription = getEl('#embed-description');
 const embedColor = getEl('#embed-color');
 const embedFooter = getEl('#embed-footer');
+const embedImageUrl = getEl('#embed-image-url');
 const embedVerseReference = getEl('#embed-verse-reference');
 const presetSelect = getEl('#preset-select');
 const channelSelect = getEl('#builder-channel-id');
 const webhookSelect = getEl('#builder-webhook-id');
+const saveButton = getEl('#save-button');
 const sendButton = getEl('#send-button');
 const builderStatus = getEl('#builder-status');
+const channelSearchInput = getEl('#channel-search-input');
 const previewTitle = getEl('#preview-title');
 const previewDescription = getEl('#preview-description');
 const previewFooter = getEl('#preview-footer');
 const previewColorBar = getEl('#preview-color-bar');
 const previewVerse = getEl('#preview-verse');
+const previewMessageContent = getEl('#preview-message-content');
+const previewImage = getEl('#preview-image');
+
+let availableChannels = [];
 
 const presets = {
   daily: {
@@ -204,23 +245,39 @@ function setStatus(message, type = 'info') {
 }
 
 function renderPreview() {
+  if (state.draft.message_content) {
+    previewMessageContent.textContent = state.draft.message_content;
+    previewMessageContent.classList.remove('hidden');
+  } else {
+    previewMessageContent.classList.add('hidden');
+  }
   previewTitle.textContent = state.draft.title || 'DailyBread';
   previewDescription.textContent = state.draft.description || 'Start typing to see your devotional embed appear here.';
   previewFooter.textContent = state.draft.footer || 'DailyBread';
   previewColorBar.style.backgroundColor = state.draft.color || '#D6B36A';
+  if (state.draft.image_url) {
+    previewImage.src = state.draft.image_url;
+    previewImage.alt = state.draft.title ? `${state.draft.title} image` : 'Embed image';
+    previewImage.classList.remove('hidden');
+  } else {
+    previewImage.removeAttribute('src');
+    previewImage.classList.add('hidden');
+  }
   if (state.verse) {
     previewVerse.classList.remove('hidden');
-    previewVerse.innerHTML = `<span class="text-xs font-bold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">${state.verse.reference}</span><p class="mt-3 leading-7">${state.verse.text}</p><p class="mt-3 text-xs uppercase tracking-[0.15em] text-black/45 dark:text-white/45">${state.verse.translation || ''}</p>`;
+    previewVerse.innerHTML = `<span class="text-xs font-bold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">${state.verse.reference}</span><p class="mt-3 leading-7">${state.verse.text}</p><p class="mt-3 text-xs uppercase tracking-[0.15em] text-black/45 dark:text-white/45">${state.verse.translation_label || state.verse.translation || ''}</p>`;
   } else {
     previewVerse.classList.add('hidden');
   }
 }
 
 function updateDraft() {
+  state.draft.message_content = messageContent.value;
   state.draft.title = embedTitle.value;
   state.draft.description = embedDescription.value;
   state.draft.color = embedColor.value;
   state.draft.footer = embedFooter.value;
+  state.draft.image_url = embedImageUrl.value.trim();
   state.draft.verse_reference = embedVerseReference.value;
   state.draft.channel_id = channelSelect.value;
   state.draft.webhook_id = webhookSelect.value;
@@ -239,6 +296,20 @@ function applyPreset(presetKey) {
   renderPreview();
 }
 
+function renderChannelOptions(channels) {
+  const query = (channelSearchInput?.value || '').trim().toLowerCase();
+  const filteredChannels = (channels || []).filter((channel) => channel.name.toLowerCase().includes(query));
+
+  channelSelect.innerHTML = '<option value="">Select a channel</option>' + filteredChannels.map(c => `<option value="${c.id}">#${c.name}</option>`).join('');
+  if (selectedChannelId && filteredChannels.some((channel) => channel.id === selectedChannelId)) {
+    channelSelect.value = selectedChannelId;
+    state.draft.channel_id = selectedChannelId;
+  } else {
+    channelSelect.value = '';
+    state.draft.channel_id = '';
+  }
+}
+
 async function loadChannels() {
   try {
     const response = await fetch(`/api/guilds/${guildId}/channels`);
@@ -246,7 +317,8 @@ async function loadChannels() {
     if (!response.ok || !data.success) throw new Error(data.error || 'Failed to load channels');
     
     const channels = data.channels || [];
-    channelSelect.innerHTML = '<option value="">Select a channel</option>' + channels.map(c => `<option value="${c.id}">#${c.name}</option>`).join('');
+    availableChannels = channels;
+    renderChannelOptions(channels);
   } catch (error) {
     console.error('Channel load error:', error);
   }
@@ -268,6 +340,17 @@ async function loadWebhooks() {
   }
 }
 
+async function parseJsonResponse(response) {
+  const text = await response.text();
+  if (!text) return {};
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    throw new Error(response.ok ? 'The server returned an unexpected response.' : 'Unable to find that verse right now.');
+  }
+}
+
 async function searchVerse() {
   const query = verseSearchInput.value.trim();
   if (!query) {
@@ -282,12 +365,12 @@ async function searchVerse() {
 
   try {
     const response = await fetch(`/api/bible/search?query=${encodeURIComponent(query)}`);
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
     if (!response.ok || !data.success) throw new Error(data.error || 'Verse not found');
 
-    state.verse = { reference: data.reference, text: data.text, translation: data.translation };
+    state.verse = { reference: data.reference, text: data.text, translation: data.translation, translation_label: data.translation_label };
     verseReference.textContent = data.reference;
-    verseTranslation.textContent = data.translation || 'Bible verse';
+    verseTranslation.textContent = data.translation_label || data.translation || 'Bible verse';
     verseText.textContent = data.text;
     verseCard.classList.remove('hidden');
     verseSearchStatus.textContent = '';
@@ -307,24 +390,45 @@ function useVerse() {
   renderPreview();
 }
 
+function buildContainerPayload() {
+  const verseText = state.verse ? state.verse.text : (state.draft.description || '');
+  return {
+    flags: 32768,
+    components: [
+      {
+        type: 17,
+        accent_color: parseInt(state.draft.color.replace('#', ''), 16) || 14546791,
+        components: [
+          { type: 10, content: state.draft.title || 'DailyBread Verse' },
+          { type: 14 },
+          {
+            type: 9,
+            components: [
+              { type: 10, content: verseText || state.draft.message_content || 'DailyBread Verse' },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+}
+
 async function saveEmbed() {
   const payload = {
-    title: state.draft.title,
-    description: state.draft.description,
-    verse_reference: state.draft.verse_reference || '',
-    color: parseInt(state.draft.color.replace('#', ''), 16),
-    footer: state.draft.footer,
+    guild_discord_id: guildId,
+    channel_discord_id: state.draft.channel_id || selectedChannelId,
+    container_json: buildContainerPayload(),
   };
 
-  const response = await fetch('/api/embeds', {
+  const response = await fetch('/api/containers/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
   const data = await response.json();
-  if (!response.ok || !data.success) throw new Error(data.error || 'Unable to save embed');
-  state.savedEmbedId = data.embed_id;
-  return data.embed_id;
+  if (!response.ok || !data.success) throw new Error(data.error || 'Unable to save container');
+  state.savedEmbedId = data.container_id;
+  return data.container_id;
 }
 
 async function sendEmbed() {
@@ -345,18 +449,13 @@ async function sendEmbed() {
 
   try {
     const embedId = state.savedEmbedId || await saveEmbed();
-    const payload = { guild_id: guildId, channel_id: channelId, webhook_id: webhookId };
-    console.log('Sending embed to backend:', payload);
-
-    const response = await fetch(`/api/embeds/${embedId}/send`, {
+    const response = await fetch(`/api/containers/${embedId}/send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
     });
     const data = await response.json();
-    console.log('Send API response:', { status: response.status, data });
-    if (!response.ok || !data.success) throw new Error(data.error || 'Unable to send embed');
-    setStatus('Embed sent successfully! Check your Discord channel.', 'success');
+    if (!response.ok || !data.success) throw new Error(data.error || 'Unable to send container');
+    setStatus('Container sent successfully! Check your Discord channel.', 'success');
   } catch (error) {
     console.error('Embed send error:', error);
     setStatus(error.message || 'Send failed. Please try again.', 'error');
@@ -370,8 +469,19 @@ async function sendEmbed() {
 verseSearchButton.addEventListener('click', searchVerse);
 verseSearchInput.addEventListener('keydown', (e) => e.key === 'Enter' && searchVerse());
 useVerseButton.addEventListener('click', useVerse);
-[presetSelect, embedTitle, embedDescription, embedColor, embedFooter, channelSelect, webhookSelect].forEach((el) => el.addEventListener('input', updateDraft));
+[presetSelect, messageContent, embedTitle, embedDescription, embedColor, embedFooter, embedImageUrl].forEach((el) => el.addEventListener('input', updateDraft));
+[channelSelect, webhookSelect].forEach((el) => el.addEventListener('change', updateDraft));
 presetSelect.addEventListener('change', (e) => applyPreset(e.target.value));
+channelSearchInput?.addEventListener('input', () => renderChannelOptions(availableChannels));
+saveButton.addEventListener('click', async () => {
+  try {
+    setStatus('Saving container...', 'info');
+    await saveEmbed();
+    setStatus('Container saved to Supabase.', 'success');
+  } catch (error) {
+    setStatus(error.message || 'Unable to save container.', 'error');
+  }
+});
 sendButton.addEventListener('click', sendEmbed);
 
 loadChannels();

@@ -36,6 +36,10 @@ def build_payload_from_embed(embed: Dict[str, Any], bible_data: Optional[Dict[st
     if footer_text:
         embed_payload["footer"] = {"text": footer_text}
 
+    image_url = embed.get("image_url")
+    if image_url:
+        embed_payload["image"] = {"url": image_url}
+
     if bible_data and bible_data.get("reference") and bible_data.get("text"):
         embed_payload["fields"] = [
             {
@@ -45,7 +49,10 @@ def build_payload_from_embed(embed: Dict[str, Any], bible_data: Optional[Dict[st
             }
         ]
 
-    return {"embeds": [embed_payload]}
+    payload: Dict[str, Any] = {"embeds": [embed_payload]}
+    if embed.get("message_content"):
+        payload["content"] = str(embed["message_content"])
+    return payload
 
 
 # Constructs the full Discord webhook URL from the stored webhook record. Raises an error if required information is missing.

@@ -45,9 +45,11 @@ async def create_embed(request: Request):
     verse_reference = payload.get("verse_reference")
     color = payload.get("color")
     footer = payload.get("footer")
+    message_content = str(payload.get("message_content", "")).strip()
+    image_url = str(payload.get("image_url", "")).strip()
 
-    if not title or not description:
-        return _error("Embed title and description are required.", status.HTTP_400_BAD_REQUEST)
+    if not title and not description and not message_content:
+        return _error("Message content, embed title, or embed description is required.", status.HTTP_400_BAD_REQUEST)
 
     if color is not None:
         try:
@@ -65,6 +67,8 @@ async def create_embed(request: Request):
         verse_reference=str(verse_reference).strip() if verse_reference else None,
         color=color,
         footer=str(footer).strip() if footer else None,
+        message_content=message_content or None,
+        image_url=image_url or None,
     )
 
     return {"success": True, "embed_id": str(embed.get("id")), "embed": embed}

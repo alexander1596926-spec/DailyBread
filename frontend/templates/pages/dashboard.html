@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-h-[calc(100vh-6rem)] bg-gradient-to-b from-bread-cream/50 to-bread-cream/30 dark:from-bread-night/50 dark:to-bread-night/30 py-8">
+<div class="min-h-[calc(100vh-6rem)] bg-gradient-to-b from-bread-cream/50 to-bread-cream/30 dark:from-bread-night/50 dark:to-bread-night/30 py-8" data-discord-client-id="{{ discord_client_id }}">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <!-- Header -->
     <section class="mb-10">
@@ -103,7 +103,7 @@
               Manage Server
             </a>
             {% else %}
-            <button type="button" class="flex-1 rounded-2xl border-2 border-bread-gold/30 bg-transparent px-4 py-3 text-center text-sm font-semibold text-bread-gold transition hover:bg-bread-gold/10 dark:border-bread-amber/30 dark:text-bread-amber dark:hover:bg-bread-amber/10" onclick="addBotToGuild('{{ guild.guild_id }}')">
+            <button type="button" class="flex-1 rounded-2xl bg-bread-gold px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#c79f4a]" onclick="addBotToGuild('{{ guild.guild_id }}')">
               Add DailyBread
             </button>
             {% endif %}
@@ -140,13 +140,13 @@
   </div>
 </div>
 
+<script id="guild-data" type="application/json">{{ guilds | tojson }}</script>
 <script>
-// Frontend Debug: Log normalized guild data
 document.addEventListener('DOMContentLoaded', () => {
-  const guilds = {{ guilds | tojson }};
+  const guildData = document.getElementById('guild-data');
+  const guilds = guildData ? JSON.parse(guildData.textContent) : [];
   console.log('Frontend: Loaded guilds from backend:', guilds);
   
-  // Verify field names and boolean types
   if (guilds && guilds.length > 0) {
     const firstGuild = guilds[0];
     console.log('Frontend: First guild fields:', {
@@ -160,16 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function addBotToGuild(guildId) {
-  const discordClientId = '{{ discord_client_id }}';
+  const discordClientId = document.body.dataset.discordClientId || '';
   if (!discordClientId) {
     alert('Bot invite is not configured. Please contact the administrator.');
     return;
   }
-  // Normalized invite URL with proper permissions and scopes
+
   const botInviteUrl = `https://discord.com/oauth2/authorize?client_id=${discordClientId}&permissions=537119808&integration_type=0&scope=bot+applications.commands`;
   window.open(botInviteUrl, '_blank');
-  
-  // Debug log
   console.log('Opening bot invite for guild:', guildId);
 }
 </script>

@@ -1,4 +1,5 @@
 import os
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -12,15 +13,19 @@ for env_path in (BASE_DIR / ".env", BASE_DIR.parent / ".env"):
         load_dotenv(env_path, override=False)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("supabase_url")
-SUPABASE_KEY = (os.getenv("supabase_service_key")
+SUPABASE_KEY = (
+    os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    or os.getenv("SUPABASE_SERVICE_KEY")
+    or os.getenv("supabase_service_key")
 )
 SUPABASE_KEY_SOURCE = (
     "SERVICE_ROLE"
-    if os.getenv("supabase_service_key")
+    if SUPABASE_KEY
     else "NONE"
 )
 
-print("SUPABASE INIT", {"url": SUPABASE_URL, "key_source": SUPABASE_KEY_SOURCE})
+LOGGER = logging.getLogger(__name__)
+LOGGER.info("Supabase init url=%s key_source=%s", SUPABASE_URL, SUPABASE_KEY_SOURCE)
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError(
@@ -65,14 +70,23 @@ def get_guild_by_guild_id(guild_id: str) -> Optional[Dict[str, Any]]:
     return rows[0] if rows else None
 
 
+def get_guilds_by_guild_ids(guild_ids: List[str]) -> Dict[str, Dict[str, Any]]:
+    if not guild_ids:
+        return {}
+
+    rows = _execute(supabase.table("guilds").select("*").in_("guild_id", guild_ids))
+    return {str(row.get("guild_id")): row for row in rows or []}
+
+
 # Lists all guilds that the specified user is a member of, along with their permissions and whether they are the owner. Returns a list of guild data dictionaries.
 def get_user_guilds(user_id: Any) -> List[Dict[str, Any]]:
     rows = _execute(
         supabase.table("user_guilds").select("*").eq("user_id", user_id)
     )
+    guild_map = get_guilds_by_guild_ids([str(row.get("guild_id")) for row in rows or []])
     guilds: List[Dict[str, Any]] = []
     for row in rows or []:
-        guild = get_guild_by_guild_id(str(row.get("guild_id")))
+        guild = guild_map.get(str(row.get("guild_id")))
         if not guild:
             continue
         guilds.append(
@@ -84,6 +98,8 @@ def get_user_guilds(user_id: Any) -> List[Dict[str, Any]]:
                 "owner": bool(row.get("is_owner")),
                 "permissions": int(row.get("permissions", 0)),
                 "has_bot": bool(guild.get("has_bot")),
+                "is_owner": bool(row.get("is_owner")),
+                "is_admin": bool(row.get("is_admin")),
                 "owner_id": guild.get("owner_id"),
             }
         )
@@ -126,11 +142,9 @@ def upsert_user_by_discord_id(
     if global_name:
         record["global_name"] = global_name
 
-    print("UPSERT USER", record)
     rows = _execute(
         supabase.table("users").upsert(record, on_conflict="discord_id").select("*")
     )
-    print("SUPABASE USER RESPONSE", rows)
     return rows[0]
 
 
@@ -143,21 +157,27 @@ def create_embed(
     verse_text: Optional[str] = None,
     color: Optional[int] = None,
     footer: Optional[str] = None,
+    message_content: Optional[str] = None,
+    image_url: Optional[str] = None,
 ) -> Dict[str, Any]:
     record = {
         "creator_id": creator_id,
+        "message_content": message_content,
         "title": title,
         "description": description,
         "verse_reference": verse_reference,
         "verse_text": verse_text,
         "color": color,
         "footer": footer,
+        "image_url": image_url,
         "created_at": datetime.utcnow().isoformat(),
         "updated_at": datetime.utcnow().isoformat(),
     }
-    print("INSERT EMBED", record)
-    rows = _execute(supabase.table("embeds").insert(record).select("*"))
-    print("SUPABASE EMBED RESPONSE", rows)
+    try:
+        rows = _execute(supabase.table("embeds").insert(record).select("*"))
+    except Exception:
+        legacy_record = {k: v for k, v in record.items() if k not in {"message_content", "image_url"}}
+        rows = _execute(supabase.table("embeds").insert(legacy_record).select("*"))
     return rows[0]
 
 
@@ -165,6 +185,79 @@ def create_embed(
 def get_embed_by_id(embed_id: str) -> Optional[Dict[str, Any]]:
     rows = _execute(supabase.table("embeds").select("*").eq("id", embed_id).limit(1))
     return rows[0] if rows else None
+
+
+def create_container(
+    creator_id: Any,
+    container_json: Dict[str, Any],
+    guild_discord_id: Optional[str] = None,
+    channel_discord_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    record = {
+        "creator_id": creator_id,
+        "container_json": container_json,
+        "guild_discord_id": str(guild_discord_id) if guild_discord_id else None,
+        "channel_discord_id": str(channel_discord_id) if channel_discord_id else None,
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
+    }
+    rows = _execute(supabase.table("containers").insert(record).select("*"))
+    return rows[0]
+
+
+def get_container_by_id(container_id: str) -> Optional[Dict[str, Any]]:
+    rows = _execute(supabase.table("containers").select("*").eq("id", container_id).limit(1))
+    return rows[0] if rows else None
+
+
+def list_containers_for_user(user_id: Any) -> List[Dict[str, Any]]:
+    rows = _execute(supabase.table("containers").select("*").eq("creator_id", user_id).order("created_at", desc=True))
+    return rows or []
+
+
+def list_containers_for_guild(guild_id: str) -> List[Dict[str, Any]]:
+    rows = _execute(supabase.table("containers").select("*").eq("guild_discord_id", str(guild_id)).order("created_at", desc=True))
+    return rows or []
+
+
+def update_container(
+    container_id: str,
+    container_json: Optional[Dict[str, Any]] = None,
+    guild_discord_id: Optional[str] = None,
+    channel_discord_id: Optional[str] = None,
+    sent_at: Optional[str] = None,
+    status_code: Optional[int] = None,
+    error: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    record: Dict[str, Any] = {"updated_at": datetime.utcnow().isoformat()}
+    if container_json is not None:
+        record["container_json"] = container_json
+    if guild_discord_id is not None:
+        record["guild_discord_id"] = str(guild_discord_id) if guild_discord_id else None
+    if channel_discord_id is not None:
+        record["channel_discord_id"] = str(channel_discord_id) if channel_discord_id else None
+    if sent_at is not None:
+        record["sent_at"] = sent_at
+    if status_code is not None:
+        record["status_code"] = status_code
+    if error is not None:
+        record["error"] = error
+
+    rows = _execute(supabase.table("containers").update(record).eq("id", container_id).select("*"))
+    return rows[0] if rows else None
+
+
+def send_container_via_webhook(container: Dict[str, Any], webhook: Dict[str, Any], payload: Dict[str, Any]) -> Dict[str, Any]:
+    from backend.services import webhook_service
+
+    result = webhook_service.send_webhook_record(webhook, payload)
+    row = update_container(
+        str(container.get("id") or ""),
+        sent_at=datetime.utcnow().isoformat(),
+        status_code=result.get("status_code"),
+        error=result.get("error"),
+    )
+    return {"success": bool(result.get("success")), **result, "container": row}
 
 
 # Upserts a guild by its ID. Returns the upserted guild data. If the guild already exists, its information will be updated with the provided data. If the guild does not exist, a new record will be created.
@@ -188,11 +281,9 @@ def upsert_guild(
     if owner_id is not None:
         record["owner_id"] = owner_id
 
-    print("UPSERT GUILD", record)
     rows = _execute(
         supabase.table("guilds").upsert(record, on_conflict="guild_id").select("*")
     )
-    print("SUPABASE GUILD RESPONSE", rows)
     return rows[0]
 
 
@@ -212,24 +303,27 @@ def ensure_user_guild(
         "is_admin": is_admin,
         "updated_at": datetime.utcnow().isoformat(),
     }
-    print("UPSERT USER_GUILD", record)
     rows = _execute(
         supabase.table("user_guilds").upsert(record, on_conflict="user_id,guild_id").select("*")
     )
-    print("SUPABASE USER_GUILD RESPONSE", rows)
     return rows[0]
 
-
+ 
 # Upserts a list of channels. Each channel should have a unique discord_id. Returns the list of upserted channel data.
 def upsert_channels(channels: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if not channels:
         return []
-    print("UPSERT CHANNELS", channels)
     rows = _execute(
         supabase.table("channels").upsert(channels, on_conflict="discord_id").select("*")
     )
-    print("SUPABASE CHANNELS RESPONSE", rows)
     return rows or []
+
+
+def get_channel_by_discord_id(channel_discord_id: str) -> Optional[Dict[str, Any]]:
+    rows = _execute(
+        supabase.table("channels").select("*").eq("discord_id", channel_discord_id).limit(1)
+    )
+    return rows[0] if rows else None
 
 
 # Creates a new webhook record and returns the created webhook data.
@@ -243,9 +337,7 @@ def create_webhook_record(webhook: Dict[str, Any]) -> Dict[str, Any]:
         "created_at": datetime.utcnow().isoformat(),
         "updated_at": datetime.utcnow().isoformat(),
     }
-    print("INSERT WEBHOOK", record)
     rows = _execute(supabase.table("webhooks").insert(record).select("*"))
-    print("SUPABASE WEBHOOK RESPONSE", rows)
     return rows[0]
 
 
@@ -323,11 +415,9 @@ def store_bible_cache(reference: str, text: str, translation: Optional[str] = No
         "translation": translation,
         "updated_at": datetime.utcnow().isoformat(),
     }
-    print("UPSERT BIBLE_CACHE", record)
     rows = _execute(
-        supabase.table("bible_cache").upsert(record, on_conflict="updated_at").select("*")
+        supabase.table("bible_cache").upsert(record, on_conflict="reference").select("*")
     )
-    print("SUPABASE BIBLE_CACHE RESPONSE", rows)
     return rows[0]
 
 

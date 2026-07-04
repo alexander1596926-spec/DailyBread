@@ -1,51 +1,87 @@
 :root {
-  color-scheme: light;
-  --surface: #f5efe4;
-  --surface-soft: #e9dfc8;
-  --ink: #2b2b2b;
-  --gold: #d6b36a;
+  --color-background: #F8F3EA;      
+  --color-surface: #FFFDF9;         
+  --color-surface-2: #E8DCC8;       
+  --color-text: #2A2520;           
+  --color-text-secondary: #6B6258;  
+  --color-accent: #BE8A35;         
+  --color-accent-soft: #E8D0A2;    
+  --color-success: #6E8D66;         
+  --color-border: #D2C2AD;          
+  --color-hover: #F1E6D2;  
+  --surface: var(--color-surface);
+  --surface-soft: var(--color-background);
+  --ink: var(--color-text);
+  --gold: var(--color-accent);
+  --nav-text-color: var(--color-text-secondary);
+  --nav-hover-bg: var(--color-hover);
+  --nav-hover-text: var(--color-text);
+  --nav-active-bg: var(--color-surface);
+  --icon-border: var(--color-border);
+  --icon-hover-bg: var(--color-hover);
+  --icon-hover-border: rgb(200 155 74 / 0.45);
+  --card-border: var(--color-border);
+  --card-bg: var(--color-surface);
+  --feature-icon-bg: #EFE6D7;
+  --feature-icon-color: #4E5E49;
 }
 
-.dark {
-  color-scheme: dark;
-  --surface: #181818;
-  --surface-soft: #232323;
-  --ink: #f5efe4;
-  --gold: #c9a55b;
-}
-
+/* ==========================================
+   2. GLOBAL ELEMENT STYLES & LAYOUT BASE
+   ========================================== */
 body {
   font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  background-color: var(--color-background);
+  background-image: linear-gradient(180deg, var(--color-background), var(--color-surface));
+  color: var(--ink);
+  color-scheme: light;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+input,
+select,
+textarea,
+button {
+  color: inherit;
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  color-scheme: inherit;
+}
+
+a,
+button {
+  opacity: 1;
 }
 
 ::selection {
   background: rgba(214, 179, 106, 0.45);
 }
 
+/* ==========================================
+   3. REFACTORED COMPONENT RULES
+   ========================================== */
+
+/* --- Navigation Links --- */
 .nav-link {
   min-height: 2.75rem;
   border-radius: 999px;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
   font-weight: 800;
-  color: rgb(43 43 43 / 0.64);
+  color: var(--nav-text-color);
   transition: color 160ms ease, background 160ms ease;
-}
-
-.dark .nav-link {
-  color: rgb(245 239 228 / 0.68);
 }
 
 .nav-link:hover,
 .nav-link.is-active {
-  background: rgb(255 255 255 / 0.55);
-  color: #2b2b2b;
-}
-
-.dark .nav-link:hover,
-.dark .nav-link.is-active {
-  background: rgb(255 255 255 / 0.08);
-  color: #f5efe4;
+  background: var(--nav-hover-bg);
+  color: var(--nav-hover-text);
 }
 
 .mobile-nav-link,
@@ -57,79 +93,50 @@ body {
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
   font-weight: 800;
-  color: rgb(43 43 43 / 0.68);
-}
-
-.dark .mobile-nav-link,
-.dark .dashboard-nav-link {
-  color: rgb(245 239 228 / 0.7);
+  color: var(--nav-text-color);
 }
 
 .mobile-nav-link.is-active,
 .dashboard-nav-link.is-active {
-  background: #ffffff;
-  color: #2b2b2b;
+  background: var(--nav-active-bg);
+  color: var(--nav-hover-text);
 }
 
-.dark .mobile-nav-link.is-active,
-.dark .dashboard-nav-link.is-active {
-  background: rgb(255 255 255 / 0.08);
-  color: #f5efe4;
-}
-
+/* --- Buttons --- */
 .icon-button {
   min-height: 2.75rem;
   min-width: 2.75rem;
   border-radius: 999px;
   display: inline-grid;
   place-items: center;
-  border: 1px solid rgb(0 0 0 / 0.08);
-  color: #2b2b2b;
+  border: 1px solid var(--icon-border);
+  color: var(--ink);
   transition: background 160ms ease, border-color 160ms ease;
 }
 
-.dark .icon-button {
-  border-color: rgb(255 255 255 / 0.12);
-  color: #f5efe4;
-}
-
 .icon-button:hover {
-  background: rgb(255 255 255 / 0.6);
-  border-color: rgb(214 179 106 / 0.55);
+  background: var(--icon-hover-bg);
+  border-color: var(--icon-hover-border);
 }
-
-.dark .icon-button:hover {
-  background: rgb(255 255 255 / 0.08);
-  border-color: rgb(201 165 91 / 0.55);
-}
-
+ 
+/* --- Layout Cards --- */
 .feature-card,
 .dashboard-card {
-  border: 1px solid rgb(0 0 0 / 0.06);
+  border: 1px solid var(--card-border);
   border-radius: 1.25rem;
-  background: rgb(255 255 255 / 0.72);
+  background: var(--card-bg);
   padding: 1.25rem;
 }
 
-.dark .feature-card,
-.dark .dashboard-card {
-  border-color: rgb(255 255 255 / 0.1);
-  background: rgb(35 35 35 / 0.72);
-}
-
+/* --- Custom Layout Graphics/Icons --- */
 .feature-icon {
   display: grid;
   height: 3rem;
   width: 3rem;
   place-items: center;
   border-radius: 1rem;
-  background: #e9dfc8;
-  color: #2b2b2b;
-}
-
-.dark .feature-icon {
-  background: rgb(245 239 228 / 0.1);
-  color: #c9a55b;
+  background: var(--feature-icon-bg);
+  color: var(--feature-icon-color);
 }
 
 .feature-icon svg {
@@ -137,6 +144,9 @@ body {
   width: 1.45rem;
 }
 
+/* ==========================================
+   4. ACCESSIBILITY OVERRIDES
+   ========================================== */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -145,3 +155,105 @@ body {
     transition-duration: 1ms !important;
   }
 }
+
+/* ==========================================
+   5. FORCE-LIGHT THEME SAFEGUARDS
+   ------------------------------------------
+   These rules ensure the site remains readable and
+   interactive even when browsers attempt automatic
+   darkening or when 'dark' utility classes are present.
+   They provide explicit, maintainable defaults for
+   component backgrounds, text colors, and button states.
+   ========================================== */
+
+html, body {
+  /* Reinforce light color-scheme for user agents */
+  color-scheme: light;
+  background-color: var(--color-background) !important;
+  color: var(--ink) !important;
+}
+
+/* Buttons and actionable elements: visible by default */
+button,
+.btn,
+.button,
+input[type="button"],
+input[type="submit"],
+[role="button"],
+a.inline-flex {
+  background-color: var(--color-hover) !important;
+  color: var(--color-text-secondary) !important;
+  border-color: var(--color-border) !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+button:hover,
+.btn:hover,
+.button:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+[role="button"]:hover,
+a.inline-flex:hover {
+  background-color: #eadbc7 !important;
+}
+
+/* Primary CTAs */
+.btn-primary,
+button.bg-bread-gold,
+button.bg-bread-ink,
+.rounded-2xl.bg-bread-gold,
+.rounded-2xl.bg-bread-ink {
+  background-color: var(--color-hover) !important;
+  color: var(--color-text-secondary) !important;
+  border-color: var(--color-border) !important;
+}
+.btn-primary:hover,
+button.bg-bread-gold:hover,
+button.bg-bread-ink:hover {
+  background-color: #eadbc7 !important;
+}
+
+/* Disabled state */
+button:disabled,
+.btn[disabled] {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* Cards and surfaces should remain light */
+.feature-card,
+.dashboard-card,
+.rounded-2xl,
+.bg-white,
+.bg-bread-cream,
+.bg-bread-linen {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border-color: var(--card-border) !important;
+}
+
+/* Ensure text colors are not auto-inverted */
+.text-white,
+.text-bread-cream {
+  color: var(--color-text) !important;
+}
+
+/* Preview embed enforcement */
+#embed-preview,
+#verse-card,
+#preview-verse {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border-color: var(--card-border) !important;
+}
+
+/* Accessibility: ensure focus outlines remain visible */
+*:focus {
+  outline: 3px solid rgba(200,155,74,0.18) !important;
+  outline-offset: 2px !important;
+}
+
+/* End force-light overrides */

@@ -2,10 +2,16 @@ import logging
 import os
 import secrets
 import traceback
+from typing import Any
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.exception_handlers import http_exception_handler as fastapi_http_exception_handler
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from backend.auth import (
     SESSION_COOKIE_NAME,
@@ -16,6 +22,7 @@ from backend.auth import (
     build_guild_icon_url,
     create_session_cookie_value,
     get_login_redirect_url,
+    get_oauth_redirect_uri,
     get_session,
     exchange_code_for_token,
     fetch_discord_guilds,
@@ -34,8 +41,39 @@ DISCORD_CLIENT_ID = os.getenv("DISCORD_CLIENT_ID", os.getenv("discord_client_id"
 app = FastAPI(title="DailyBread", version="0.1.0")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.include_router(routes_router)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
+
+
+def _is_api_request(request: Request) -> bool:
+    if request.url.path.startswith("/api"):
+        return True
+    accept_header = request.headers.get("accept", "")
+    return "application/json" in accept_header
+
+
+@app.exception_handler(StarletteHTTPException)
+async def starlette_http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    if _is_api_request(request):
+        detail = exc.detail if isinstance(exc.detail, str) else "Request failed."
+        return JSONResponse(status_code=exc.status_code, content={"success": False, "error": detail})
+    return await fastapi_http_exception_handler(request, exc)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    if _is_api_request(request):
+        return JSONResponse(status_code=422, content={"success": False, "error": "Invalid request payload."})
+    return await request_validation_exception_handler(request, exc)
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    if _is_api_request(request):
+        logger.exception("Unhandled API exception", exc_info=exc)
+        return JSONResponse(status_code=500, content={"success": False, "error": "Internal server error."})
+    return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
 
 
 # pylint: disable=too-many-arguments
@@ -53,7 +91,12 @@ def build_template_context(request: Request, extra: dict | None = None) -> dict:
 
 # pylint: disable=invalid-name 
 def _get_user_guilds_from_db(session: dict) -> list[dict]:
-    user_record = supabase_service.get_user_by_discord_id(str(session["user"]["id"]))
+    try:
+        user_record = supabase_service.get_user_by_discord_id(str(session["user"]["id"]))
+    except Exception as exc:
+        logger.warning("Unable to load guilds from Supabase; using session guilds. error=%s", exc)
+        return session.get("guilds", [])
+
     if not user_record:
         return session.get("guilds", [])
 
@@ -65,14 +108,21 @@ def _get_user_guilds_from_db(session: dict) -> list[dict]:
 
 # pylint: disable=invalid-name
 @app.get("/", response_class=HTMLResponse)
-async def landing_page(request: Request) -> HTMLResponse:
+async def landing_page(
+    request: Request, 
+    code: str | None = None,
+    state: str | None = None,
+) -> Any:
+    
+    if code and state:
+        logger.info("OAuth parameters arrived on landing page; forwarding to callback handler")
+        return oauth_callback(request, code, state)
+
     return templates.TemplateResponse(
-        request,
-        "pages/index.html",
+        request, 
+        "pages/index.html", 
         build_template_context(request, {"page_title": "DailyBread", "active_page": "home"}),
     )
-
-
 # pylint: disable=invalid-name
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request) -> HTMLResponse:
@@ -91,8 +141,8 @@ async def login_page(request: Request) -> HTMLResponse:
 @app.get("/login/discord")
 def login_discord(request: Request) -> RedirectResponse:
     state = secrets.token_urlsafe(16)
-    redirect_url = get_login_redirect_url(state)
-    response = RedirectResponse(url=redirect_url)
+    redirect_url = get_login_redirect_url(state, request)
+    response = RedirectResponse(url=redirect_url, status_code=307)
     secure_cookie = request.url.scheme == "https"
     response.set_cookie(
         STATE_COOKIE_NAME,
@@ -106,7 +156,12 @@ def login_discord(request: Request) -> RedirectResponse:
 
 
 # pylint: disable=invalid-name
+@app.get("/callback/")
+def oauth_callback_no_slash(request: Request, code: str | None = None, state: str | None = None) -> RedirectResponse:
+    return oauth_callback(request, code, state)
 @app.get("/callback")
+def oauth_callback_with_slash(request: Request, code: str | None = None, state: str | None = None) -> RedirectResponse:
+    return oauth_callback(request, code, state)
 def oauth_callback(request: Request, code: str | None = None, state: str | None = None) -> RedirectResponse:
     if not code or not state:
         raise HTTPException(status_code=400, detail="Missing OAuth callback parameters.")
@@ -115,19 +170,19 @@ def oauth_callback(request: Request, code: str | None = None, state: str | None 
     if not expected_state or expected_state != state:
         raise HTTPException(status_code=403, detail="Invalid OAuth state. Please try again.")
 
-    print("OAUTH CALLBACK ENTERED")
+    logger.info("OAuth callback entered")
     try:
-        token_data = exchange_code_for_token(code)
-        print("TOKEN EXCHANGE SUCCESS", {k: token_data[k] for k in token_data if k != 'access_token'})
+        token_data = exchange_code_for_token(code, get_oauth_redirect_uri(request))
+        logger.info("Discord token exchange succeeded")
         access_token = token_data["access_token"]
 
         user_data = fetch_discord_user(access_token)
-        print("DISCORD USER FETCHED", {"id": user_data.get("id"), "username": user_data.get("username")})
+        logger.info("Discord user fetched id=%s username=%s", user_data.get("id"), user_data.get("username"))
 
         guilds_data = fetch_discord_guilds(access_token)
-        print("DISCORD GUILDS FETCHED", {"count": len(guilds_data)})
+        logger.info("Discord guilds fetched count=%s", len(guilds_data))
 
-        print("SUPABASE SYNC STARTED")
+        logger.info("Supabase OAuth sync started")
         user = {
             "id": user_data["id"],
             "username": user_data["username"],
@@ -135,20 +190,12 @@ def oauth_callback(request: Request, code: str | None = None, state: str | None 
             "avatar_url": build_avatar_url(user_data),
         }
 
-        print("USER UPSERT ATTEMPT", {
-            "discord_id": str(user_data["id"]),
-            "username": user_data.get("username", ""),
-            "avatar": user["avatar"],
-            "global_name": user_data.get("global_name", ""),
-        })
         user_record = supabase_service.upsert_user_by_discord_id(
             discord_id=str(user_data["id"]),
             username=user_data.get("username", ""),
             avatar=user.get("avatar"),
             global_name=user_data.get("global_name", ""),
         )
-        print("USER UPSERT RESPONSE", user_record)
-
         synced_guilds = []
         for guild in guilds_data:
             guild_id = str(guild.get("id", ""))
@@ -158,24 +205,13 @@ def oauth_callback(request: Request, code: str | None = None, state: str | None 
 
             # FILTER: Only sync guilds where user is owner or admin
             if not is_admin:
-                print(f"GUILD SKIPPED (not admin/owner): {guild_id}")
                 continue
-
-            print("GUILD UPSERT ATTEMPT", {
-                "guild_id": guild_id,
-                "name": guild.get("name", ""),
-                "icon": guild.get("icon"),
-                "owner_id": guild.get("owner_id"),
-                "permissions": permissions,
-                "is_admin": is_admin,
-            })
 
             has_bot = False
             try:
                 has_bot = discord_service.is_bot_in_guild(guild_id)
-                print(f"BOT DETECTION for guild {guild_id}: has_bot={has_bot}")
             except Exception as exc:
-                print(f"BOT PRESENCE CHECK FAILED for guild {guild_id}: {exc}")
+                logger.warning("Bot presence check failed guild_id=%s error=%s", guild_id, exc)
 
             db_guild = supabase_service.upsert_guild(
                 guild_id=guild_id,
@@ -185,25 +221,13 @@ def oauth_callback(request: Request, code: str | None = None, state: str | None 
                 permissions=permissions,
                 has_bot=has_bot,
             )
-            print("GUILD UPSERT RESPONSE", db_guild)
-
-            print("USER_GUILD UPSERT ATTEMPT", {
-                "user_id": user_record["id"],
-                "guild_id": guild_id,
-                "permissions": permissions,
-                "is_owner": is_owner,
-                "is_admin": is_admin,
-            })
-            user_guild = supabase_service.ensure_user_guild(
+            supabase_service.ensure_user_guild(
                 user_id=user_record["id"],
                 guild_id=guild_id,
                 permissions=permissions,
                 is_owner=is_owner,
                 is_admin=is_admin,
             )
-            print("USER_GUILD UPSERT RESPONSE", user_guild)
-
-            # Normalized response format
             synced_guilds.append(
                 {
                     "guild_id": db_guild["guild_id"],
@@ -216,10 +240,9 @@ def oauth_callback(request: Request, code: str | None = None, state: str | None 
                 }
             )
 
-        print("SUPABASE SYNC COMPLETED")
+        logger.info("Supabase OAuth sync completed guild_count=%s", len(synced_guilds))
     except Exception as exc:
-        print("OAUTH CALLBACK FAILED", str(exc))
-        print(traceback.format_exc())
+        logger.error("OAuth callback failed: %s\n%s", exc, traceback.format_exc())
         raise
 
     session_value = create_session_cookie_value(user, synced_guilds)
@@ -283,10 +306,12 @@ async def guild_management_page(request: Request, guild_id: str) -> HTMLResponse
 
 # Guild builder 
 @app.get("/dashboard/guild/{guild_id}/builder", response_class=HTMLResponse)
-async def guild_builder_page(request: Request, guild_id: str) -> HTMLResponse:
+async def guild_builder_page(request: Request, guild_id: str, channel_id: str | None = None) -> HTMLResponse:
     session = get_session(request)
     if not session:
         return RedirectResponse(url="/login")
+    if not channel_id:
+        return RedirectResponse(url=f"/dashboard/guild/{guild_id}")
 
     guilds = _get_user_guilds_from_db(session)
     guild = next((g for g in guilds if str(g.get("guild_id")) == str(guild_id)), None)
@@ -301,6 +326,7 @@ async def guild_builder_page(request: Request, guild_id: str) -> HTMLResponse:
             "active_page": "builder",
             "user": session["user"],
             "guild": guild,
+            "selected_channel_id": channel_id,
         }),
     )
 
@@ -313,6 +339,7 @@ async def builder_page(request: Request) -> HTMLResponse:
         return RedirectResponse(url="/login")
 
     guilds = _get_user_guilds_from_db(session)
+    builder_guilds = [guild for guild in guilds if guild.get("has_bot")]
     return templates.TemplateResponse(
         request,
         "pages/builder.html",
@@ -320,7 +347,27 @@ async def builder_page(request: Request) -> HTMLResponse:
             "page_title": "Embed Builder - DailyBread",
             "active_page": "builder",
             "user": session["user"],
-            "guilds": guilds,
+            "guilds": builder_guilds,
+        }),
+    )
+
+
+@app.get("/dashboard/advanced-builder", response_class=HTMLResponse)
+async def advanced_builder_page(request: Request) -> HTMLResponse:
+    session = get_session(request)
+    if not session:
+        return RedirectResponse(url="/login")
+
+    guilds = _get_user_guilds_from_db(session)
+    advanced_guilds = [guild for guild in guilds if guild.get("has_bot")]
+    return templates.TemplateResponse(
+        request,
+        "pages/advanced-builder.html",
+        build_template_context(request, {
+            "page_title": "Advanced Builder - DailyBread",
+            "active_page": "advanced_builder",
+            "user": session["user"],
+            "guilds": advanced_guilds,
         }),
     )
 

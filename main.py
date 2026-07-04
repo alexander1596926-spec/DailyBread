@@ -6,7 +6,6 @@ import uvicorn
 
 from bot.bot import create_bot
 from bot.utils.config import configure_logging, get_discord_token, load_environment_variables
-from bot.utils.keepalive import start_render_helpers
 from backend.main import app as web_app
 
 
@@ -17,7 +16,6 @@ def _get_port() -> int:
 async def start_services() -> None:
     load_environment_variables()
     configure_logging()
-    start_render_helpers()
 
     token = get_discord_token()
     bot = create_bot()
@@ -28,6 +26,8 @@ async def start_services() -> None:
         host="0.0.0.0",
         port=_get_port(),
         log_level=os.getenv("LOG_LEVEL", "info"),
+        proxy_headers=True,
+        forwarded_allow_ips="*",
     )
     web_server = uvicorn.Server(server_config)
     web_task = asyncio.create_task(web_server.serve())
