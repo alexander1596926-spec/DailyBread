@@ -29,7 +29,7 @@
           </div>
 
           <div class="grid gap-3 sm:grid-cols-[1fr_auto]">
-            <input id="verse-search-input" type="text" placeholder="e.g., John 3:16, Psalm 23, or NLT/NKJV/NIV 1 Corinthians 16:14" class="w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream" />
+            <input id="verse-search-input" type="text" placeholder="e.g., NLT/NIV/NKJV John 3:16" class="w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream" />
             <button id="verse-search-button" type="button" class="rounded-2xl bg-bread-gold px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#c9a55b] dark:bg-bread-amber dark:hover:bg-[#b8945a]">Search</button>
           </div>
 
@@ -136,11 +136,10 @@
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="text-sm font-semibold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">Ready</p>
-              <h3 class="mt-2 font-semibold text-bread-ink dark:text-bread-cream">Save and send Components V2</h3>
+              <h3 class="mt-2 font-semibold text-bread-ink dark:text-bread-cream">Send to Discord</h3>
             </div>
             <div class="flex flex-wrap gap-3">
-              <button id="save-button" type="button" class="rounded-2xl border border-bread-border bg-bread-background px-6 py-4 text-sm font-semibold text-bread-ink transition hover:bg-bread-hover">Save Container</button>
-              <button id="send-button" type="button" class="rounded-2xl bg-bread-ink px-6 py-4 text-sm font-semibold text-white transition hover:bg-black dark:bg-bread-cream dark:text-bread-night dark:hover:bg-white">Send Container</button>
+              <button id="send-button" type="button" class="rounded-2xl bg-bread-ink px-6 py-4 text-sm font-semibold text-white transition hover:bg-black dark:bg-bread-cream dark:text-bread-night dark:hover:bg-white">Send Embed</button>
             </div>
           </div>
           <div id="builder-status" class="mt-4 min-h-[1.5rem] text-sm text-bread-ink/75 dark:text-white/75"></div>
@@ -240,8 +239,8 @@ const presets = {
 function setStatus(message, type = 'info') {
   builderStatus.textContent = message;
   builderStatus.className = type === 'error'
-    ? 'mt-4 text-sm font-semibold text-rose-600 dark:text-rose-400'
-    : 'mt-4 text-sm font-semibold text-emerald-700 dark:text-emerald-300';
+    ? 'mt-4 text-sm font-semibold text-rose-600'
+    : 'mt-4 text-sm font-semibold text-emerald-700';
 }
 
 function renderPreview() {
@@ -265,7 +264,7 @@ function renderPreview() {
   }
   if (state.verse) {
     previewVerse.classList.remove('hidden');
-    previewVerse.innerHTML = `<span class="text-xs font-bold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">${state.verse.reference}</span><p class="mt-3 leading-7">${state.verse.text}</p><p class="mt-3 text-xs uppercase tracking-[0.15em] text-black/45 dark:text-white/45">${state.verse.translation_label || state.verse.translation || ''}</p>`;
+    previewVerse.innerHTML = `<span class="text-xs font-bold uppercase tracking-[0.15em] text-bread-sage" >${state.verse.reference}</span><p class="mt-3 leading-7">${state.verse.text}</p><p class="mt-3 text-xs uppercase tracking-[0.15em] text-black/45 dark:text-white/45">${state.verse.translation_label || state.verse.translation || ''}</p>`;
   } else {
     previewVerse.classList.add('hidden');
   }
@@ -355,12 +354,12 @@ async function searchVerse() {
   const query = verseSearchInput.value.trim();
   if (!query) {
     verseSearchStatus.textContent = 'Please enter a verse to search.';
-    verseSearchStatus.className = 'mt-4 text-sm font-semibold text-rose-600 dark:text-rose-400';
+    verseSearchStatus.className = 'mt-4 text-sm font-semibold text-rose-600';
     return;
   }
 
   verseSearchStatus.textContent = 'Searching...';
-  verseSearchStatus.className = 'mt-4 text-sm text-bread-ink/75 dark:text-white/75';
+  verseSearchStatus.className = 'mt-4 text-sm text-bread-ink/75';
   verseCard.classList.add('hidden');
 
   try {
@@ -377,7 +376,7 @@ async function searchVerse() {
     renderPreview();
   } catch (error) {
     verseSearchStatus.textContent = error.message || 'Unable to find that verse.';
-    verseSearchStatus.className = 'mt-4 text-sm font-semibold text-rose-600 dark:text-rose-400';
+    verseSearchStatus.className = 'mt-4 text-sm font-semibold text-rose-600';
   }
 }
 
@@ -390,45 +389,28 @@ function useVerse() {
   renderPreview();
 }
 
-function buildContainerPayload() {
-  const verseText = state.verse ? state.verse.text : (state.draft.description || '');
-  return {
-    flags: 32768,
-    components: [
-      {
-        type: 17,
-        accent_color: parseInt(state.draft.color.replace('#', ''), 16) || 14546791,
-        components: [
-          { type: 10, content: state.draft.title || 'DailyBread Verse' },
-          { type: 14 },
-          {
-            type: 9,
-            components: [
-              { type: 10, content: verseText || state.draft.message_content || 'DailyBread Verse' },
-            ],
-          },
-        ],
-      },
-    ],
-  };
-}
+
 
 async function saveEmbed() {
   const payload = {
-    guild_discord_id: guildId,
-    channel_discord_id: state.draft.channel_id || selectedChannelId,
-    container_json: buildContainerPayload(),
+    title: state.draft.title,
+    description: state.draft.description,
+    verse_reference: state.draft.verse_reference || '',
+    color: parseInt(state.draft.color.replace('#', ''), 16),
+    footer: state.draft.footer,
+    image_url: state.draft.image_url || '',
+    message_content: state.draft.message_content || '',
   };
 
-  const response = await fetch('/api/containers/create', {
+  const response = await fetch('/api/embeds', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
   const data = await response.json();
-  if (!response.ok || !data.success) throw new Error(data.error || 'Unable to save container');
-  state.savedEmbedId = data.container_id;
-  return data.container_id;
+  if (!response.ok || !data.success) throw new Error(data.error || 'Unable to save embed');
+  state.savedEmbedId = data.embed_id;
+  return data.embed_id;
 }
 
 async function sendEmbed() {
@@ -449,13 +431,20 @@ async function sendEmbed() {
 
   try {
     const embedId = state.savedEmbedId || await saveEmbed();
-    const response = await fetch(`/api/containers/${embedId}/send`, {
+    const response = await fetch(`/api/embeds/${embedId}/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        guild_id: state.guildId,          // or however you store it
+        channel_id: state.draft.channel_id,
+        webhook_id: state.draft.webhook_id || null,
+      }),
     });
     const data = await response.json();
-    if (!response.ok || !data.success) throw new Error(data.error || 'Unable to send container');
-    setStatus('Container sent successfully! Check your Discord channel.', 'success');
+    if (!response.ok || !data.success) throw new Error(data.error || 'Unable to send embed');
+    setStatus('Embed sent successfully! Check your Discord channel.', 'success');
   } catch (error) {
     console.error('Embed send error:', error);
     setStatus(error.message || 'Send failed. Please try again.', 'error');
@@ -473,15 +462,6 @@ useVerseButton.addEventListener('click', useVerse);
 [channelSelect, webhookSelect].forEach((el) => el.addEventListener('change', updateDraft));
 presetSelect.addEventListener('change', (e) => applyPreset(e.target.value));
 channelSearchInput?.addEventListener('input', () => renderChannelOptions(availableChannels));
-saveButton.addEventListener('click', async () => {
-  try {
-    setStatus('Saving container...', 'info');
-    await saveEmbed();
-    setStatus('Container saved to Supabase.', 'success');
-  } catch (error) {
-    setStatus(error.message || 'Unable to save container.', 'error');
-  }
-});
 sendButton.addEventListener('click', sendEmbed);
 
 loadChannels();

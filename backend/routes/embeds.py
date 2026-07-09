@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Request, status
@@ -108,8 +109,16 @@ async def send_embed_route(embed_id: str, request: Request):
         session = _require_session(request)
     except ValueError as exc:
         return _error(str(exc), status.HTTP_401_UNAUTHORIZED)
+    
+    raw_body = await request.body()
+    print("Raw body:", raw_body)
+    print("Headers:", request.headers)
 
-    payload = await request.json()
+    try:
+        payload = json.loads(raw_body)
+    except json.JSONDecodeError:
+        return _error("Request body is empty or invalid JSON.", status.HTTP_400_BAD_REQUEST)
+
     if not isinstance(payload, dict):
         return _error("Invalid JSON payload.", status.HTTP_400_BAD_REQUEST)
 

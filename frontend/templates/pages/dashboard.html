@@ -10,12 +10,12 @@
           <div>
             <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-bread-sage dark:text-bread-amber">Dashboard</p>
             <h1 class="mt-3 font-serif text-4xl font-bold text-bread-ink dark:text-bread-cream sm:text-5xl">Welcome back, {{ user.username }}.</h1>
-            <p class="mt-4 max-w-2xl text-sm leading-6 text-black/65 dark:text-white/70">Select a server to manage Bible verse delivery, set up channels, and create webhooks for DailyBread.</p>
+            <p class="mt-4 max-w-2xl text-sm leading-6 text-black/65"" >Select a server to manage Bible verse delivery, set up channels, and create webhooks for DailyBread.</p>
           </div>
           <div class="flex flex-col items-center gap-3 rounded-full bg-bread-linen/80 px-5 py-4 dark:bg-bread-night/80">
             <img src="{{ user.avatar_url }}" alt="{{ user.username }} avatar" class="h-16 w-16 rounded-full border-2 border-bread-gold/50 dark:border-bread-amber/50" />
             <div class="text-center">
-              <p class="text-xs uppercase tracking-[0.15em] text-black/50 dark:text-white/50">Connected as</p>
+              <p class="text-xs uppercase tracking-[0.15em] text-black/50">Connected as</p>
               <p class="font-semibold text-bread-ink dark:text-bread-cream">{{ user.username }}</p>
             </div>
           </div>
@@ -26,19 +26,19 @@
     <!-- Quick Stats -->
     <section class="mb-10 grid gap-4 sm:grid-cols-3">
       <article class="dashboard-card">
-        <p class="text-xs font-extrabold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">Total Guilds</p>
-        <p class="mt-4 text-4xl font-extrabold text-bread-ink dark:text-bread-cream">{{ guilds | length }}</p>
-        <p class="mt-2 text-sm text-black/60 dark:text-white/65">Discord servers you can manage.</p>
+        <p class="text-xs font-extrabold uppercase tracking-[0.15em] text-bread-sage" >Total Guilds</p>
+        <p class="mt-4 text-4xl font-extrabold text-bread-ink" >{{ guilds | length }}</p>
+        <p class="mt-2 text-sm text-black/60" >Discord servers you can manage.</p>
       </article>
       <article class="dashboard-card">
-        <p class="text-xs font-extrabold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">Status</p>
-        <p class="mt-4 text-lg font-semibold text-emerald-600 dark:text-emerald-400">✓ Ready</p>
-        <p class="mt-2 text-sm text-black/60 dark:text-white/65">Your profile is loaded and ready to go.</p>
+        <p class="text-xs font-extrabold uppercase tracking-[0.15em] text-bread-sage" >Status</p>
+        <p class="mt-4 text-lg font-semibold text-emerald-600" >✓ Ready</p>
+        <p class="mt-2 text-sm text-black/60" >Your profile is loaded and ready to go.</p>
       </article>
       <article class="dashboard-card">
-        <p class="text-xs font-extrabold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">Next Step</p>
-        <p class="mt-4 font-semibold text-bread-ink dark:text-bread-cream">Select Guild</p>
-        <p class="mt-2 text-sm text-black/60 dark:text-white/65">Pick a server below to continue.</p>
+        <p class="text-xs font-extrabold uppercase tracking-[0.15em] text-bread-sage" >Next Step</p>
+        <p class="mt-4 font-semibold text-bread-ink" >Select Guild</p>
+        <p class="mt-2 text-sm text-black/60" >Pick a server below to continue.</p>
       </article>
     </section>
 
@@ -46,10 +46,10 @@
     <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
       <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 class="font-serif text-3xl font-bold text-bread-ink dark:text-bread-cream">Your Discord Servers</h2>
-          <p class="mt-2 text-sm text-black/65 dark:text-white/70">Click to manage channels, webhooks, and create Bible embeds.</p>
+          <h2 class="font-serif text-3xl font-bold text-bread-ink" >Your Discord Servers</h2>
+          <p class="mt-2 text-sm text-black/65 d" >Click to manage channels, webhooks, and create Bible embeds.</p>
         </div>
-        <span class="w-fit rounded-full bg-bread-linen px-4 py-2 text-sm font-bold uppercase tracking-[0.15em] text-bread-ink dark:bg-bread-night dark:text-bread-cream">{{ guilds | length }} servers</span>
+        <span class="w-fit rounded-full bg-bread-linen px-4 py-2 text-sm font-bold uppercase tracking-[0.15em] text-bread-ink" >{{ guilds | length }} servers</span>
       </div>
 
       {% if guilds %}
@@ -67,7 +67,7 @@
                 {% endif %}
               </div>
               <div class="min-w-0 flex-1">
-                <h3 class="truncate font-semibold text-bread-ink dark:text-bread-cream">{{ guild.name }}</h3>
+                <h3 class="truncate font-semibold text-bread-ink">{{ guild.name }}</h3>
                 <div class="mt-2 flex items-center gap-2">
                   {% if guild.is_owner %}
                   <span class="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">Owner</span>
@@ -83,8 +83,8 @@
           <div class="mt-5 rounded-2xl border border-black/10 bg-white/60 p-4 dark:border-white/10 dark:bg-bread-charcoal/60">
             <div class="flex items-center justify-between gap-3">
               <div>
-                <p class="text-xs font-bold uppercase tracking-[0.15em] text-black/50 dark:text-white/50">DailyBread Bot</p>
-                <p class="mt-2 font-semibold text-bread-ink dark:text-bread-cream">
+                <p class="text-xs font-bold uppercase tracking-[0.15em] text-black/50" >DailyBread Bot</p>
+                <p class="mt-2 font-semibold text-bread-ink">
                   {% if guild.has_bot %}
                   ✓ Connected
                   {% else %}
@@ -121,18 +121,18 @@
 
     <!-- Help Section -->
     <section class="mt-10 rounded-[2rem] border border-black/8 bg-gradient-to-br from-bread-linen/30 to-bread-gold/10 p-6 dark:border-white/10 dark:from-bread-night/80 dark:to-bread-amber/5">
-      <h2 class="font-semibold text-bread-ink dark:text-bread-cream">Getting Started</h2>
+      <h2 class="font-semibold text-bread-ink">Getting Started</h2>
       <ul class="mt-4 space-y-3 text-sm text-black/70 dark:text-white/70">
         <li class="flex gap-3">
-          <span class="font-bold text-bread-gold dark:text-bread-amber">1.</span>
+          <span class="font-bold text-black/50">1.</span>
           <span>Select a server you own or manage where DailyBread is installed.</span>
         </li>
         <li class="flex gap-3">
-          <span class="font-bold text-bread-gold dark:text-bread-amber">2.</span>
+          <span class="font-bold text-black/50">2.</span>
           <span>Choose a text channel to set up a webhook for Bible verse delivery.</span>
         </li>
         <li class="flex gap-3">
-          <span class="font-bold text-bread-gold dark:text-bread-amber">3.</span>
+          <span class="font-bold text-black/50">3.</span>
           <span>Create an embed in the builder, customize the scripture, and send it to Discord.</span>
         </li>
       </ul>

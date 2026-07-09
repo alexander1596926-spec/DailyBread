@@ -21,7 +21,7 @@
               </div>
               <div>
                 <h1 class="font-serif text-3xl font-bold text-bread-ink dark:text-bread-cream">{{ guild.name }}</h1>
-                <p class="mt-2 text-sm text-black/60 dark:text-white/65">Manage channels, webhooks, and embeds.</p>
+                <p class="mt-2 text-sm text-black/60" >Manage channels, webhooks, and embeds.</p>
               </div>
             </div>
           </div>
@@ -37,9 +37,9 @@
       <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 class="font-serif text-3xl font-bold text-bread-ink dark:text-bread-cream">Text Channels</h2>
-          <p class="mt-2 text-sm text-black/65 dark:text-white/70">Create webhooks to send Bible embeds.</p>
+          <p class="mt-2 text-sm text-black/65">Create webhooks to send Bible embeds.</p>
         </div>
-        <div id="channel-load-status" class="text-sm font-semibold text-bread-ink/70 dark:text-white/70">Loading channels...</div>
+        <div id="channel-load-status" class="text-sm font-semibold text-bread-ink/70" >Loading channels...</div>
       </div>
 
       <div class="mb-5">
@@ -145,7 +145,7 @@ async function loadChannels() {
     allChannels = channels;
     
     if (channels.length === 0) {
-      channelGrid.innerHTML = '<p class="col-span-full text-sm text-black/60 dark:text-white/65">No text channels found.</p>';
+      channelGrid.innerHTML = '<p class="col-span-full text-sm text-black/60"> No text channels found.</p>';
       return;
     }
 
