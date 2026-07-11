@@ -20,7 +20,10 @@ async def handle_dailybread(interaction: discord.Interaction) -> None:
 
     channels = list_accessible_text_channels(interaction.guild)
     await interaction.response.send_message(
-        f"DailyBread is online for **{interaction.guild.name}**. Accessible webhook channels: **{len(channels)}**.",
+        f"DailyBread is online for **{interaction.guild.name}**. "
+        f"Accessible webhook channels: **{len(channels)}**.\n\n"
+        "If you want more information on status, please go to our server: "
+        "https://discord.gg/ZS8xFues5G",
         ephemeral=True,
     )
 
@@ -73,7 +76,12 @@ async def handle_help(interaction: discord.Interaction) -> None:
     """Handle the /help command."""
 
     await interaction.response.send_message(
-        "DailyBread connects this server to the website. Use `/setup` to create a webhook in a text channel, "
-        "and `/dailybread` to check bot status.",
+        "## Welcome to DailyBread!\n\n"
+        "🌐 **Website:** https://dailybread.company\n"
+        "💬 **Support Server:** https://discord.gg/ZS8xFues5G\n\n"
+        "**Commands:**\n"
+        "> `/setup` — Sets up a webhook channel for DailyBread to send daily Bible verses.\n"
+        "> `/dailybread` — Displays the bot's status for your server.",
         ephemeral=True,
     )
+

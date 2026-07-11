@@ -13,6 +13,8 @@ def create_embed_for_user(
     verse_reference: Optional[str] = None,
     color: Optional[int] = None,
     footer: Optional[str] = None,
+    message_content: Optional[str] = None,
+    image_url: Optional[str] = None,
 ) -> Dict[str, Any]:
     user = supabase_service.upsert_user_by_discord_id(user_discord_id)
     embed = supabase_service.create_embed(
@@ -23,6 +25,8 @@ def create_embed_for_user(
         verse_text=None,
         color=color,
         footer=footer,
+        message_content=message_content,
+        image_url=image_url,
     )
     return embed
 
@@ -101,7 +105,6 @@ async def send_embed(
     if channel_id and any(str(webhook.get("channel_discord_id")) != str(channel_id) for webhook in webhooks):
         return {"success": False, "error": "Selected webhook does not belong to the requested channel."}
 
-    print("RAW EMBED COLOR:", embed.get("color"))
     payload = build_payload_from_embed(embed, bible_data)
     results: List[Dict[str, Any]] = []
     for webhook in webhooks:
@@ -116,7 +119,6 @@ async def send_embed(
             response_text=result.get("response_text"),
             error=result.get("error"),
         )
-        print("PAYLOAD COLOR:", payload["embeds"][0].get("color"))
         results.append(result)
 
     all_success = all(item.get("success") for item in results)

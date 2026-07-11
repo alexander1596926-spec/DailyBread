@@ -9,7 +9,7 @@ from fastapi import HTTPException, Request
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 BASE_DIR = Path(__file__).resolve().parent
-ROOT_DIR = BASE_DIR.parent
+ROOT_DIR = BASE_DIR.parents[1]
 
 backend_env_path = BASE_DIR / ".env"
 root_env_path = ROOT_DIR / ".env"
@@ -27,16 +27,17 @@ def _get_env(*keys: str) -> str | None:
     return None
 
 # Environment variables
-DISCORD_CLIENT_ID = _get_env("discord_client_id")
-DISCORD_CLIENT_SECRET = _get_env("discord_client_secret")
-DISCORD_REDIRECT_URI = _get_env("discord_redirect_uri")
-SESSION_SECRET = _get_env("session_secret")
+DISCORD_CLIENT_ID = _get_env("DISCORD_CLIENT_ID", "discord_client_id")
+DISCORD_CLIENT_SECRET = _get_env("DISCORD_CLIENT_SECRET", "discord_client_secret")
+DISCORD_REDIRECT_URI = _get_env("DISCORD_REDIRECT_URI", "discord_redirect_uri")
+PUBLIC_BASE_URL = _get_env("PUBLIC_BASE_URL", "CLOUDFLARE_TUNNEL_URL", "cloudflare_tunnel_url")
+SESSION_SECRET = _get_env("SESSION_SECRET", "session_secret")
 
 # Error .env not found
-if not DISCORD_CLIENT_ID or not DISCORD_CLIENT_SECRET or not DISCORD_REDIRECT_URI or not SESSION_SECRET:
+if not DISCORD_CLIENT_ID or not DISCORD_CLIENT_SECRET or not SESSION_SECRET:
     raise RuntimeError(
         "Missing one or more required environment variables: DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, "
-        "DISCORD_REDIRECT_URI, SESSION_SECRET. Set these in Render or a local .env file."
+        "SESSION_SECRET. Set DISCORD_REDIRECT_URI or PUBLIC_BASE_URL for Cloudflare Tunnel/local OAuth."
     )
 
 # Discord API endpoints and session config
@@ -95,21 +96,37 @@ def get_session(request: Request) -> dict | None:
     return parse_session_cookie(raw_session)
 
 
-# Creates a state cookie value for the given state string.
-def get_login_redirect_url(state: str) -> str:
+def get_oauth_redirect_uri(request: Request | None = None) -> str:
+    """Resolve the Discord OAuth callback URL for local hosting or Cloudflare Tunnel."""
+
+    if DISCORD_REDIRECT_URI:
+        return DISCORD_REDIRECT_URI.rstrip("/")
+
+    if PUBLIC_BASE_URL:
+        return f"{PUBLIC_BASE_URL.rstrip('/')}/callback"
+
+    if request is not None:
+        return str(request.url_for("oauth_callback_with_slash")).rstrip("/")
+
+    raise RuntimeError("DISCORD_REDIRECT_URI or PUBLIC_BASE_URL is required for OAuth.")
+
+
+# Creates the Discord authorization URL for the given state string.
+def get_login_redirect_url(state: str, request: Request | None = None) -> str:
     params = {
         "client_id": DISCORD_CLIENT_ID,
-        "redirect_uri": DISCORD_REDIRECT_URI,
+        "redirect_uri": get_oauth_redirect_uri(request),
         "response_type": "code",
         "scope": "identify guilds",
         "state": state,
         "prompt": "consent",
+        "integration_type": "0",
     }
     return f"{DISCORD_AUTHORIZE_URL}?{urlencode(params)}"
 
 
 # Exchanges the authorization code for an access token, and returns the token data.
-def exchange_code_for_token(code: str) -> dict:
+def exchange_code_for_token(code: str, redirect_uri: str | None = None) -> dict:
     response = requests.post(
         DISCORD_TOKEN_URL,
         data={
@@ -117,7 +134,7 @@ def exchange_code_for_token(code: str) -> dict:
             "client_secret": DISCORD_CLIENT_SECRET,
             "grant_type": "authorization_code",
             "code": code,
-            "redirect_uri": DISCORD_REDIRECT_URI,
+            "redirect_uri": redirect_uri or get_oauth_redirect_uri(),
         },
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         timeout=15,

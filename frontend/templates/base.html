@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light only">
   <meta name="description" content="DailyBread is a calm Bible-focused Discord platform for designing and sending scripture embeds.">
   <title>{{ page_title | default("DailyBread") }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,19 +12,26 @@
   <script>
     tailwind = {
       config: {
-        darkMode: "class",
+        darkMode: 'class',
         theme: {
           extend: {
             colors: {
               bread: {
-                linen: "#E9DFC8",
-                gold: "#D6B36A",
-                ink: "#2B2B2B",
-                night: "#181818",
-                charcoal: "#232323",
-                cream: "#F5EFE4",
-                amber: "#C9A55B",
-                sage: "#6E7D68"
+                background: "var(--color-background)",
+                surface: "var(--color-surface)",
+                surface2: "var(--color-surface-2)",
+                accent: "var(--color-accent)",
+                ink: "var(--color-text)",
+                muted: "var(--color-text-secondary)",
+                border: "var(--color-border)",
+                hover: "var(--color-hover)",
+                linen: "var(--color-background)",
+                gold: "var(--color-accent)",
+                night: "var(--color-background)",
+                charcoal: "var(--color-surface)",
+                cream: "var(--color-surface)",
+                amber: "var(--color-accent)",
+                sage: "var(--color-text-secondary)"
               }
             },
             fontFamily: {
@@ -39,9 +47,18 @@
     };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Force light-only: remove any accidental 'dark' class applied by browser or script
+    try {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+    } catch (e) {
+      // ignore
+    }
+  </script>
   <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
 </head>
-<body class="min-h-screen bg-bread-cream text-bread-ink antialiased transition-colors duration-300 dark:bg-bread-night dark:text-bread-cream">
+<body class="min-h-screen bg-bread-background text-bread-ink antialiased transition-colors duration-300">
   <div class="min-h-screen flex flex-col">
     {% include "partials/navbar.html" %}
     <main class="flex-1">

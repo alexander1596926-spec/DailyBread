@@ -8,7 +8,6 @@ from discord.ext import commands
 from bot.cogs.dailybread import DailyBreadCog
 from bot.events.lifecycle import register_lifecycle_events
 from bot.utils.config import configure_logging, get_discord_token, get_runtime_environment, load_environment_variables
-from bot.utils.keepalive import start_render_helpers
 
 
 load_environment_variables()
@@ -41,11 +40,10 @@ def create_bot() -> commands.Bot:
 
 
 def run_bot() -> None:
-    """Production startup function used by main.py and Render."""
+    """Bot startup function used by local hosting and Cloudflare Tunnel."""
 
     configure_logging()
     LOGGER.info("DailyBread environment mode: %s", get_runtime_environment())
-    start_render_helpers()
     token = get_discord_token()
     bot = create_bot()
     LOGGER.info("Starting DailyBread bot")

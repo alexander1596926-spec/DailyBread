@@ -6,34 +6,22 @@ from dotenv import load_dotenv
 
 
 ENVIRONMENT_LOCAL = "local"
-ENVIRONMENT_RENDER = "render"
+ENVIRONMENT_CLOUDFLARE = "cloudflare"
 ENVIRONMENT_VARIABLE = "DAILYBREAD_ENV"
 
 
 def get_runtime_environment() -> str:
-    """Return whether the bot should run with local or Render behavior."""
+    """Return the configured runtime mode."""
 
     configured_environment = os.getenv(ENVIRONMENT_VARIABLE, "").strip().lower()
-    if configured_environment in {ENVIRONMENT_LOCAL, ENVIRONMENT_RENDER}:
+    if configured_environment in {ENVIRONMENT_LOCAL, ENVIRONMENT_CLOUDFLARE}:
         return configured_environment
-
-    if os.getenv("RENDER"):
-        return ENVIRONMENT_RENDER
 
     return ENVIRONMENT_LOCAL
 
 
-def is_render_environment() -> bool:
-    """Check whether Render-only startup helpers should run."""
-
-    return get_runtime_environment() == ENVIRONMENT_RENDER
-
-
 def load_environment_variables() -> None:
-    """Load the right environment source for local development or Render."""
-
-    if os.getenv("RENDER"):
-        return
+    """Load local environment variables when a .env file is available."""
 
     project_root = Path(__file__).resolve().parents[2]
     backend_env = project_root / "backend" / ".env"
@@ -48,7 +36,7 @@ def load_environment_variables() -> None:
 
 
 def configure_logging() -> None:
-    """Configure clean console logs for local development and Render."""
+    """Configure clean console logs for local hosting and Cloudflare Tunnel."""
 
     logging.basicConfig(
         level=os.getenv("LOG_LEVEL", "INFO").upper(),
@@ -63,4 +51,4 @@ def get_discord_token() -> str:
     if token:
         return token.strip().strip('"').strip("'")
 
-    raise RuntimeError("DISCORD_TOKEN is missing. Add it to the Render environment or .env file.")
+    raise RuntimeError("DISCORD_TOKEN is missing. Add it to your local or Cloudflare Tunnel environment.")

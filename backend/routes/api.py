@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
@@ -74,6 +74,14 @@ def _embed_payload(embed: Dict[str, Any]) -> Dict[str, Any]:
     if footer:
         payload["embeds"][0]["footer"] = {"text": footer}
 
+    image_url = embed.get("image_url")
+    if image_url:
+        payload["embeds"][0]["image"] = {"url": image_url}
+
+    message_content = embed.get("message_content")
+    if message_content:
+        payload["content"] = str(message_content)
+
     if embed.get("verse_reference") and embed.get("verse_text"):
         payload["embeds"][0]["fields"] = [
             {
@@ -137,6 +145,8 @@ def _sync_user_and_guilds(session: Dict[str, Any]) -> Dict[str, Any]:
     return {"user": user_record, "guilds": synced_guilds}
 
 
+
+
 # API Endpoints
 # Guild Endpoints - list guilds, list channels, create webhook, list webhooks, delete webhook
 @api_router.get("/guilds")
@@ -146,12 +156,16 @@ async def get_guilds(request: Request):
     except ValueError as exc:
         return _error(str(exc), status.HTTP_401_UNAUTHORIZED)
 
-    synced = _sync_user_and_guilds(session)
-    
-    # Debug: log normalized API response
-    print("DEBUG: Normalized API response guilds:", synced["guilds"])
-    
-    return {"success": True, "guilds": synced["guilds"]}
+    user_record = supabase_service.get_user_by_discord_id(str(session["user"]["id"]))
+    if not user_record:
+        synced = _sync_user_and_guilds(session)
+        return {"success": True, "guilds": synced["guilds"]}
+
+    guilds = supabase_service.get_user_guilds(user_record["id"])
+    for guild in guilds:
+        guild["icon_url"] = build_guild_icon_url({"id": guild.get("guild_id"), "icon": guild.get("icon")})
+
+    return {"success": True, "guilds": guilds}
 
 
 # Bible Endpoint - search for verse reference and return verse text
@@ -170,6 +184,7 @@ async def bible_search(query: str | None = None):
             "reference": verse.get("reference"),
             "text": verse.get("text"),
             "translation": verse.get("translation"),
+            "translation_label": verse.get("translation_label") or verse.get("translation"),
         }
     except Exception as exc:
         return _error(str(exc) or "Unable to resolve verse.", status.HTTP_502_BAD_GATEWAY)
@@ -274,10 +289,12 @@ async def create_embed(request: Request):
     verse_reference = str(data.get("verse_reference", "")).strip()
     verse_text = str(data.get("verse_text", "")).strip()
     footer = str(data.get("footer", "")).strip()
+    message_content = str(data.get("message_content", "")).strip()
+    image_url = str(data.get("image_url", "")).strip()
     color_value = data.get("color")
 
-    if not title or not description:
-        return _error("Embed title and description are required.", status.HTTP_400_BAD_REQUEST)
+    if not title and not description and not message_content:
+        return _error("Message content, embed title, or embed description is required.", status.HTTP_400_BAD_REQUEST)
 
     normalized_color = _normalize_color(color_value)
     if color_value is not None and normalized_color is None:
@@ -285,7 +302,8 @@ async def create_embed(request: Request):
 
     if verse_reference and not verse_text:
         try:
-            verse_text = bible_service.resolve_verse_reference(verse_reference)
+            bible_data = bible_service.resolve_verse_reference(verse_reference)
+            verse_text = bible_data.get("text") if bible_data else ""
         except Exception as exc:
             return _error(str(exc), status.HTTP_502_BAD_GATEWAY)
 
@@ -306,6 +324,8 @@ async def create_embed(request: Request):
         verse_text=verse_text or None,
         footer=footer or None,
         color=normalized_color,
+        message_content=message_content or None,
+        image_url=image_url or None,
     )
 
     return {

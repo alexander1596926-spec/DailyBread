@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Request, status
@@ -45,9 +46,11 @@ async def create_embed(request: Request):
     verse_reference = payload.get("verse_reference")
     color = payload.get("color")
     footer = payload.get("footer")
+    message_content = str(payload.get("message_content", "")).strip()
+    image_url = str(payload.get("image_url", "")).strip()
 
-    if not title or not description:
-        return _error("Embed title and description are required.", status.HTTP_400_BAD_REQUEST)
+    if not title and not description and not message_content:
+        return _error("Message content, embed title, or embed description is required.", status.HTTP_400_BAD_REQUEST)
 
     if color is not None:
         try:
@@ -65,6 +68,8 @@ async def create_embed(request: Request):
         verse_reference=str(verse_reference).strip() if verse_reference else None,
         color=color,
         footer=str(footer).strip() if footer else None,
+        message_content=message_content or None,
+        image_url=image_url or None,
     )
 
     return {"success": True, "embed_id": str(embed.get("id")), "embed": embed}
@@ -104,8 +109,16 @@ async def send_embed_route(embed_id: str, request: Request):
         session = _require_session(request)
     except ValueError as exc:
         return _error(str(exc), status.HTTP_401_UNAUTHORIZED)
+    
+    raw_body = await request.body()
+    print("Raw body:", raw_body)
+    print("Headers:", request.headers)
 
-    payload = await request.json()
+    try:
+        payload = json.loads(raw_body)
+    except json.JSONDecodeError:
+        return _error("Request body is empty or invalid JSON.", status.HTTP_400_BAD_REQUEST)
+
     if not isinstance(payload, dict):
         return _error("Invalid JSON payload.", status.HTTP_400_BAD_REQUEST)
 
