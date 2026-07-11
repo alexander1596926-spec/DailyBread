@@ -1,9 +1,11 @@
 import os
 import re
 from pathlib import Path
+import traceback
 from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
+from itsdangerous import exc
 import requests
 
 from backend.services.supabase_service import get_bible_cache, store_bible_cache
@@ -15,28 +17,20 @@ for env_path in (BASE_DIR / ".env", BASE_DIR.parent / ".env"):
         load_dotenv(env_path, override=False)
 
 def _get_api_config() -> Dict[str, str]:
-    api_key = (
-        os.getenv("API_BIBLE_KEY")
-        or os.getenv("api_bible_key")
-        or os.getenv("BIBLE_API_KEY")
-        or os.getenv("bible_api_key")
-        or ""
-    )
-    base_url = (
-        os.getenv("API_BIBLE_BASE_URL")
-        or os.getenv("api_bible_base_url")
-        or os.getenv("BIBLE_API_BASE_URL")
-        or os.getenv("bible_api_base_url")
-        or "https://api.scripture.api.bible/v1"
+    api_key = os.getenv("bible_api_key")
+
+    base_url = os.getenv(
+        "bible_api_base_url",
+        "https://api.scripture.api.bible/v1"
     ).rstrip("/")
-    bible_id = (
-        os.getenv("API_BIBLE_ID")
-        or os.getenv("api_bible_id")
-        or os.getenv("BIBLE_API_ID")
-        or os.getenv("bible_api_id")
-        or "d6e14a625393b4da-01"
-    )
-    return {"api_key": api_key, "base_url": base_url, "bible_id": bible_id}
+
+    bible_id = os.getenv("bible_id")
+
+    return {
+        "api_key": api_key,
+        "base_url": base_url,
+        "bible_id": bible_id,
+    }
 
 
 # Normalizes the response from the Bible API to ensure we have consistent fields for reference, text, and translation.
@@ -84,11 +78,14 @@ def _parse_translation_token(token: str) -> Optional[Dict[str, str]]:
     label = raw_token.upper()
     env_name = f"{raw_token.lower()}_bible_id"
     translation_id = os.getenv(env_name)
+    print("Looking for:", env_name)
+    print("Found:", os.getenv(env_name))
     if translation_id:
         return {"label": label, "translation_id": translation_id}
     return None
 
 
+# Parse a Bible reference query into its component parts
 def _parse_reference_query(query: str) -> Dict[str, Any]:
     normalized_query = query.strip()
     if not normalized_query:
@@ -116,6 +113,7 @@ def _parse_reference_query(query: str) -> Dict[str, Any]:
     return {"reference": normalized_query, "translations": [], "translation_labels": [], "query": normalized_query}
 
 
+# Resolves a verse reference to its passage ID using the Bible API.
 def _find_passage_id(reference: str, bible_id: Optional[str] = None) -> str:
     api_config = _get_api_config()
     selected_bible_id = bible_id or api_config["bible_id"]
@@ -159,6 +157,7 @@ def _get_translation_label(translation_id: Optional[str], requested_labels: Opti
     return str(translation_id)
 
 
+# Resolves a verse reference to its text and translation using the Bible API, with caching to reduce API calls.
 def resolve_verse_reference(reference: str) -> Optional[Dict[str, Any]]:
     reference = reference.strip()
     if not reference:
@@ -209,13 +208,15 @@ def resolve_verse_reference(reference: str) -> Optional[Dict[str, Any]]:
             )
             store_bible_cache(
                 cache_key,
+                selected_reference,
                 bible_data["text"],
                 bible_data.get("translation"),
             )
             return bible_data
-        except Exception as exc:  # pragma: no cover - exercised at runtime
-            last_error = exc
-            continue
+        except Exception as exc:
+             traceback.print_exc()
+             last_error = exc
+        continue
 
     if last_error:
         raise last_error

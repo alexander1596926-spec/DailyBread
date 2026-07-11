@@ -21,6 +21,7 @@ async def start_services() -> None:
     bot = create_bot()
 
     bot_task = asyncio.create_task(bot.start(token))
+
     server_config = uvicorn.Config(
         web_app,
         host="0.0.0.0",
@@ -29,22 +30,38 @@ async def start_services() -> None:
         proxy_headers=True,
         forwarded_allow_ips="*",
     )
+
     web_server = uvicorn.Server(server_config)
     web_task = asyncio.create_task(web_server.serve())
 
-    done, pending = await asyncio.wait(
-        {bot_task, web_task},
-        return_when=asyncio.FIRST_EXCEPTION,
-    )
+    tasks = {bot_task, web_task}
 
-    for task in pending:
-        task.cancel()
-        with suppress(asyncio.CancelledError):
-            await task
+    try:
+        done, pending = await asyncio.wait(
+            tasks,
+            return_when=asyncio.FIRST_EXCEPTION,
+        )
 
-    for task in done:
-        if task.exception():
-            raise task.exception()
+        for task in done:
+            if task.exception():
+                raise task.exception()
+
+    except asyncio.CancelledError:
+        # Expected during shutdown
+        pass
+
+    finally:
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+
+        await asyncio.gather(
+            *tasks,
+            return_exceptions=True,
+        )
+
+        if not bot.is_closed():
+            await bot.close()
 
 
 def run_main() -> None:

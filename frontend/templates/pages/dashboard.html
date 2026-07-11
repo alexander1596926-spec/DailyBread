@@ -1,22 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-h-[calc(100vh-6rem)] bg-gradient-to-b from-bread-cream/50 to-bread-cream/30 dark:from-bread-night/50 dark:to-bread-night/30 py-8" data-discord-client-id="{{ discord_client_id }}">
+<div class="min-h-[calc(100vh-6rem)] bg-gradient-to-b from-bread-cream/50 to-bread-cream/30 py-8" data-discord-client-id="{{ discord_client_id }}">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <!-- Header -->
     <section class="mb-10">
-      <div class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+      <div class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm sm:p-8">
         <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-bread-sage dark:text-bread-amber">Dashboard</p>
-            <h1 class="mt-3 font-serif text-4xl font-bold text-bread-ink dark:text-bread-cream sm:text-5xl">Welcome back, {{ user.username }}.</h1>
+            <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-bread-sage ">Dashboard</p>
+            <h1 class="mt-3 font-serif text-4xl font-bold text-bread-ink  sm:text-5xl">Welcome back, {{ user.username }}.</h1>
             <p class="mt-4 max-w-2xl text-sm leading-6 text-black/65"" >Select a server to manage Bible verse delivery, set up channels, and create webhooks for DailyBread.</p>
           </div>
-          <div class="flex flex-col items-center gap-3 rounded-full bg-bread-linen/80 px-5 py-4 dark:bg-bread-night/80">
-            <img src="{{ user.avatar_url }}" alt="{{ user.username }} avatar" class="h-16 w-16 rounded-full border-2 border-bread-gold/50 dark:border-bread-amber/50" />
+          <div class="flex flex-col items-center gap-3 rounded-full bg-bread-linen/80 px-5 py-4 ">
+            <img src="{{ user.avatar_url }}" alt="{{ user.username }} avatar" class="h-16 w-16 rounded-full border-2 border-bread-gold/50" />
             <div class="text-center">
               <p class="text-xs uppercase tracking-[0.15em] text-black/50">Connected as</p>
-              <p class="font-semibold text-bread-ink dark:text-bread-cream">{{ user.username }}</p>
+              <p class="font-semibold text-bread-ink ">{{ user.username }}</p>
             </div>
           </div>
         </div>
@@ -43,11 +43,11 @@
     </section>
 
     <!-- Guild List -->
-    <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+    <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm sm:p-8">
       <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 class="font-serif text-3xl font-bold text-bread-ink" >Your Discord Servers</h2>
-          <p class="mt-2 text-sm text-black/65 d" >Click to manage channels, webhooks, and create Bible embeds.</p>
+          <p class="mt-2 text-sm text-black/65" >Click to manage channels, webhooks, and create Bible embeds.</p>
         </div>
         <span class="w-fit rounded-full bg-bread-linen px-4 py-2 text-sm font-bold uppercase tracking-[0.15em] text-bread-ink" >{{ guilds | length }} servers</span>
       </div>
@@ -55,11 +55,11 @@
       {% if guilds %}
       <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {% for guild in guilds %}
-        <article class="group rounded-[1.75rem] border border-black/10 bg-bread-cream/80 p-6 transition hover:border-bread-gold/50 hover:shadow-lg dark:border-white/10 dark:bg-bread-night/80 dark:hover:border-bread-amber/50\">
+        <article class="group rounded-[1.75rem] border border-black/10 bg-bread-cream/80 p-6 transition hover:border-bread-gold/50 hover:shadow-lg">
           <!-- Guild Header -->
           <div class=\"flex items-start justify-between gap-4\">
             <div class="flex items-center gap-4">
-              <div class="grid h-14 w-14 flex-shrink-0 place-items-center rounded-2xl bg-white/80 text-base font-bold text-bread-ink dark:bg-bread-charcoal">
+              <div class="grid h-14 w-14 flex-shrink-0 place-items-center rounded-2xl bg-white/80 text-base font-bold text-bread-ink">
                 {% if guild.icon_url %}
                 <img src="{{ guild.icon_url }}" alt="{{ guild.name }} icon" class="h-12 w-12 rounded-xl object-cover" />
                 {% else %}
@@ -70,9 +70,9 @@
                 <h3 class="truncate font-semibold text-bread-ink">{{ guild.name }}</h3>
                 <div class="mt-2 flex items-center gap-2">
                   {% if guild.is_owner %}
-                  <span class="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">Owner</span>
+                  <span class="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700">Owner</span>
                   {% elif guild.is_admin %}
-                  <span class="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">Admin</span>
+                  <span class="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs font-bold text-blue-700">Admin</span>
                   {% endif %}
                 </div>
               </div>
@@ -80,7 +80,7 @@
           </div>
 
           <!-- Bot Status -->
-          <div class="mt-5 rounded-2xl border border-black/10 bg-white/60 p-4 dark:border-white/10 dark:bg-bread-charcoal/60">
+          <div class="mt-5 rounded-2xl border border-black/10 bg-white/60 p-4">
             <div class="flex items-center justify-between gap-3">
               <div>
                 <p class="text-xs font-bold uppercase tracking-[0.15em] text-black/50" >DailyBread Bot</p>
@@ -99,7 +99,7 @@
           <!-- Actions -->
           <div class="mt-6 flex gap-3">
             {% if guild.has_bot %}
-            <a href="/dashboard/guild/{{ guild.guild_id }}" class="flex-1 rounded-2xl bg-bread-ink px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-black dark:bg-bread-cream dark:text-bread-night dark:hover:bg-white">
+            <a href="/dashboard/guild/{{ guild.guild_id }}" class="flex-1 rounded-2xl bg-bread-ink px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-black ">
               Manage Server
             </a>
             {% else %}
@@ -112,17 +112,17 @@
         {% endfor %}
       </div>
       {% else %}
-      <div class="rounded-2xl border-2 border-dashed border-black/15 bg-bread-cream/50 p-8 text-center dark:border-white/15 dark:bg-bread-charcoal/50">
-        <p class="text-sm font-semibold text-black/70 dark:text-white/70">No Discord servers found.</p>
-        <p class="mt-2 text-xs text-black/50 dark:text-white/50">Make sure you're logged in with a Discord account that has servers.</p>
+      <div class="rounded-2xl border-2 border-dashed border-black/15 bg-bread-cream/50 p-8 text-center">
+        <p class="text-sm font-semibold text-black/70">No Discord servers found.</p>
+        <p class="mt-2 text-xs text-black/50">Make sure you're logged in with a Discord account that has servers.</p>
       </div>
       {% endif %}
     </section>
 
     <!-- Help Section -->
-    <section class="mt-10 rounded-[2rem] border border-black/8 bg-gradient-to-br from-bread-linen/30 to-bread-gold/10 p-6 dark:border-white/10 dark:from-bread-night/80 dark:to-bread-amber/5">
+    <section class="mt-10 rounded-[2rem] border border-black/8 bg-gradient-to-br from-bread-linen/30 to-bread-gold/10 p-6">
       <h2 class="font-semibold text-bread-ink">Getting Started</h2>
-      <ul class="mt-4 space-y-3 text-sm text-black/70 dark:text-white/70">
+      <ul class="mt-4 space-y-3 text-sm text-black/70">
         <li class="flex gap-3">
           <span class="font-bold text-black/50">1.</span>
           <span>Select a server you own or manage where DailyBread is installed.</span>

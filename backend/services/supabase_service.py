@@ -328,24 +328,41 @@ def log_embed_send(
 
 
 # Retrieves a Bible cache record by its reference. Returns the Bible cache data if found, or None if not found. 
-def get_bible_cache(reference: str) -> Optional[Dict[str, Any]]:
+def get_bible_cache(cache_key: str) -> Optional[Dict[str, Any]]:
     rows = _execute(
-        supabase.table("bible_cache").select("*").eq("reference", reference).limit(1)
+        supabase
+        .table("bible_cache")
+        .select("*")
+        .eq("cache_key", cache_key)
+        .limit(1)
     )
-    return rows[0] if rows else None
 
+    if not rows:
+        return None
 
+    return rows[0]
 # Upserts a Bible cache record. Returns the upserted Bible cache data.
-def store_bible_cache(reference: str, text: str, translation: Optional[str] = None) -> Dict[str, Any]:
+def store_bible_cache(
+    cache_key: str,
+    reference: str,
+    text: str,
+    translation: Optional[str] = None,
+) -> Dict[str, Any]:
     record = {
+        "cache_key": cache_key,
         "reference": reference,
         "text": text,
         "translation": translation,
         "updated_at": datetime.utcnow().isoformat(),
     }
+
     rows = _execute(
-        supabase.table("bible_cache").upsert(record, on_conflict="reference").select("*")
+        supabase
+        .table("bible_cache")
+        .upsert(record, on_conflict="cache_key")
+        .select("*")
     )
+
     return rows[0]
 
 

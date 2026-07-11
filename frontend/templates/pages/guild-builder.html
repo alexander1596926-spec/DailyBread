@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-h-[calc(100vh-6rem)] bg-gradient-to-b from-bread-cream/50 to-bread-cream/30 dark:from-bread-night/50 dark:to-bread-night/30 py-8">
+<div class="min-h-[calc(100vh-6rem)] bg-gradient-to-b from-bread-cream/50 to-bread-cream/30 py-8">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <!-- Breadcrumb & Header -->
     <div class="mb-8 flex flex-col gap-4">
-      <a href="/dashboard/guild/{{ guild.guild_id }}" class="w-fit text-sm font-semibold text-bread-gold transition hover:text-bread-ink dark:text-bread-amber dark:hover:text-bread-cream">Back to Server</a>
+      <a href="/dashboard/guild/{{ guild.guild_id }}" class="w-fit text-sm font-semibold text-bread-gold transition hover:text-bread-ink ">Back to Server</a>
 
-      <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+      <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm  sm:p-8">
         <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-bread-sage dark:text-bread-amber">Embed Builder</p>
-            <h1 class="mt-3 font-serif text-3xl font-bold text-bread-ink dark:text-bread-cream">Create scripture message for {{ guild.name }}</h1>
-            <p class="mt-3 max-w-2xl text-sm leading-6 text-black/65 dark:text-white/70">Search verses, customize your embed, and send to a channel.</p>
+            <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-bread-sage">Embed Builder</p>
+            <h1 class="mt-3 font-serif text-3xl font-bold text-bread-ink ">Create scripture message for {{ guild.name }}</h1>
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-black/65">Search verses, customize your embed, and send to a channel.</p>
           </div>
         </div>
       </section>
@@ -22,54 +22,54 @@
       <!-- Form Section -->
       <div class="space-y-6">
         <!-- Bible Verse Search -->
-        <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+        <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm sm:p-8">
           <div class="mb-6">
-            <h2 class="font-serif text-2xl font-bold text-bread-ink dark:text-bread-cream">Verse Search</h2>
-            <p class="mt-2 text-sm text-black/65 dark:text-white/70">Find a Bible verse to include in your embed.</p>
+            <h2 class="font-serif text-2xl font-bold text-bread-ink">Verse Search</h2>
+            <p class="mt-2 text-sm text-black/65">Find a Bible verse to include in your embed.</p>
           </div>
 
           <div class="grid gap-3 sm:grid-cols-[1fr_auto]">
-            <input id="verse-search-input" type="text" placeholder="e.g., NLT/NIV/NKJV John 3:16" class="w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream" />
-            <button id="verse-search-button" type="button" class="rounded-2xl bg-bread-gold px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#c9a55b] dark:bg-bread-amber dark:hover:bg-[#b8945a]">Search</button>
+            <input id="verse-search-input" type="text" placeholder="e.g., NLT/NIV/NKJV John 3:16" class="w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15" />
+            <button id="verse-search-button" type="button" class="rounded-2xl bg-bread-gold px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#c9a55b]">Search</button>
           </div>
 
-          <div id="verse-search-status" class="mt-4 min-h-[1.5rem] text-sm text-bread-ink/75 dark:text-white/75"></div>
+          <div id="verse-search-status" class="mt-4 min-h-[1.5rem] text-sm text-bread-ink/75"></div>
 
-          <div id="verse-card" class="mt-6 hidden rounded-2xl border border-black/10 bg-bread-cream/80 p-6 dark:border-white/10 dark:bg-bread-night/80">
+          <div id="verse-card" class="mt-6 hidden rounded-2xl border border-black/10 bg-bread-cream/80 p-6">
             <div class="flex items-start justify-between gap-4">
               <div>
-                <p class="text-xs font-bold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">Verse</p>
-                <h3 id="verse-reference" class="mt-3 text-lg font-semibold text-bread-ink dark:text-bread-cream"></h3>
+                <p class="text-xs font-bold uppercase tracking-[0.15em] text-bread-sage">Verse</p>
+                <h3 id="verse-reference" class="mt-3 text-lg font-semibold text-bread-ink"></h3>
               </div>
-              <button id="use-verse-button" type="button" class="rounded-full bg-bread-gold px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#c9a55b] dark:bg-bread-amber dark:hover:bg-[#b8945a]">Use Verse</button>
+              <button id="use-verse-button" type="button" class="rounded-full bg-bread-gold px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#c9a55b]">Use Verse</button>
             </div>
-            <p id="verse-translation" class="mt-4 text-xs uppercase tracking-[0.15em] text-black/45 dark:text-white/45"></p>
-            <p id="verse-text" class="mt-4 text-base leading-7 text-black/75 dark:text-white/70"></p>
+            <p id="verse-translation" class="mt-4 text-xs uppercase tracking-[0.15em] text-black/45"></p>
+            <p id="verse-text" class="mt-4 text-base leading-7 text-black/75"></p>
           </div>
         </section>
 
         <!-- Editor Mode -->
-        <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+        <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm sm:p-8">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 class="font-serif text-2xl font-bold text-bread-ink dark:text-bread-cream">Editor Mode</h2>
-              <p class="mt-2 text-sm text-black/65 dark:text-white/70">Basic editor is available now. Advanced editor is prepared for a future release.</p>
+              <h2 class="font-serif text-2xl font-bold text-bread-ink ">Editor Mode</h2>
+              <p class="mt-2 text-sm text-black/65 ">Basic editor is available now. Advanced editor is prepared for a future release.</p>
             </div>
             <div class="inline-flex rounded-full border border-bread-border bg-bread-background p-1">
-              <button type="button" class="rounded-full bg-bread-ink px-4 py-2 text-sm font-bold text-white dark:bg-bread-accent dark:text-bread-background">Basic</button>
+              <button type="button" class="rounded-full bg-bread-ink px-4 py-2 text-sm font-bold text-white ">Basic</button>
               <button type="button" disabled class="rounded-full px-4 py-2 text-sm font-bold text-bread-muted opacity-70">Advanced Soon</button>
             </div>
           </div>
         </section>
 
         <!-- Embed Details -->
-        <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+        <section class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm sm:p-8">
           <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 class="font-serif text-2xl font-bold text-bread-ink dark:text-bread-cream">Embed Details</h2>
-              <p class="mt-2 text-sm text-black/65 dark:text-white/70">Customize the message for Discord.</p>
+              <h2 class="font-serif text-2xl font-bold text-bread-ink">Embed Details</h2>
+              <p class="mt-2 text-sm text-black/65">Customize the message for Discord.</p>
             </div>
-            <label class="flex items-center gap-3 rounded-full border border-black/10 bg-bread-linen/50 px-4 py-3 text-sm font-semibold text-bread-ink dark:border-white/10 dark:bg-bread-night/80 dark:text-bread-cream">
+            <label class="flex items-center gap-3 rounded-full border border-black/10 bg-bread-linen/50 px-4 py-3 text-sm font-semibold text-bread-ink ">
               Preset
               <select id="preset-select" class="w-24 bg-transparent font-semibold outline-none">
                 <option value="daily">Daily Verse</option>
@@ -81,47 +81,47 @@
 
           <div class="space-y-5">
             <div>
-              <label class="block text-sm font-semibold text-bread-ink dark:text-bread-cream">Message Content</label>
-              <textarea id="message-content" rows="3" placeholder="Optional Discord message text outside the embed" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base leading-7 text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream"></textarea>
+              <label class="block text-sm font-semibold text-bread-ink ">Message Content</label>
+              <textarea id="message-content" rows="3" placeholder="Optional Discord message text outside the embed" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base leading-7 text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15"></textarea>
             </div>
 
             <div>
-              <label class="block text-sm font-semibold text-bread-ink dark:text-bread-cream">Title</label>
-              <input id="embed-title" type="text" value="DailyBread" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream" />
+              <label class="block text-sm font-semibold text-bread-ink ">Title</label>
+              <input id="embed-title" type="text" value="DailyBread" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15" />
             </div>
 
             <div>
-              <label class="block text-sm font-semibold text-bread-ink dark:text-bread-cream">Description</label>
-              <textarea id="embed-description" rows="6" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base leading-7 text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream"></textarea>
+              <label class="block text-sm font-semibold text-bread-ink">Description</label>
+              <textarea id="embed-description" rows="6" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base leading-7 text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15"></textarea>
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
-                <label class="block text-sm font-semibold text-bread-ink dark:text-bread-cream">Color</label>
-                <input id="embed-color" type="color" value="#D6B36A" class="mt-3 h-14 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10" />
+                <label class="block text-sm font-semibold text-bread-ink ">Color</label>
+                <input id="embed-color" type="color" value="#D6B36A" class="mt-3 h-14 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15" />
               </div>
               <div>
-                <label class="block text-sm font-semibold text-bread-ink dark:text-bread-cream">Footer</label>
-                <input id="embed-footer" type="text" value="DailyBread" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream" />
+                <label class="block text-sm font-semibold text-bread-ink ">Footer</label>
+                <input id="embed-footer" type="text" value="DailyBread" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15" />
               </div>
             </div>
 
             <div>
-              <label class="block text-sm font-semibold text-bread-ink dark:text-bread-cream">Embed Image URL</label>
-              <input id="embed-image-url" type="url" placeholder="https://example.com/image.png" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream" />
+              <label class="block text-sm font-semibold text-bread-ink">Embed Image URL</label>
+              <input id="embed-image-url" type="url" placeholder="https://example.com/image.png" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15" />
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
-                <label class="block text-sm font-semibold text-bread-ink dark:text-bread-cream">Channel</label>
-                <input id="channel-search-input" type="text" placeholder="Search channels..." class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream" />
-                <select id="builder-channel-id" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream">
+                <label class="block text-sm font-semibold text-bread-ink">Channel</label>
+                <input id="channel-search-input" type="text" placeholder="Search channels..." class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15" />
+                <select id="builder-channel-id" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15">
                   <option value="">Select a channel</option>
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-semibold text-bread-ink dark:text-bread-cream">Webhook</label>
-                <select id="builder-webhook-id" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15 dark:border-white/10 dark:bg-bread-night dark:text-bread-cream">
+                <label class="block text-sm font-semibold text-bread-ink">Webhook</label>
+                <select id="builder-webhook-id" class="mt-3 w-full rounded-2xl border border-black/10 bg-bread-cream px-4 py-4 text-base text-bread-ink outline-none transition focus:border-bread-gold focus:ring-4 focus:ring-bread-gold/15">
                   <option value="">Select webhook</option>
                 </select>
               </div>
@@ -132,33 +132,33 @@
         </section>
 
         <!-- Send Button -->
-        <div class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95 sm:p-8">
+        <div class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm sm:p-8">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm font-semibold uppercase tracking-[0.15em] text-bread-sage dark:text-bread-amber">Ready</p>
-              <h3 class="mt-2 font-semibold text-bread-ink dark:text-bread-cream">Send to Discord</h3>
+              <p class="text-sm font-semibold uppercase tracking-[0.15em] text-bread-sage ">Ready</p>
+              <h3 class="mt-2 font-semibold text-bread-ink ">Send to Discord</h3>
             </div>
             <div class="flex flex-wrap gap-3">
-              <button id="send-button" type="button" class="rounded-2xl bg-bread-ink px-6 py-4 text-sm font-semibold text-white transition hover:bg-black dark:bg-bread-cream dark:text-bread-night dark:hover:bg-white">Send Embed</button>
+              <button id="send-button" type="button" class="rounded-2xl bg-bread-ink px-6 py-4 text-sm font-semibold text-white transition hover:bg-black">Send Embed</button>
             </div>
           </div>
-          <div id="builder-status" class="mt-4 min-h-[1.5rem] text-sm text-bread-ink/75 dark:text-white/75"></div>
+          <div id="builder-status" class="mt-4 min-h-[1.5rem] text-sm text-bread-ink/75"></div>
         </div>
       </div>
 
       <!-- Preview Panel -->
-      <aside class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-bread-charcoal/95">
-        <h2 class="font-serif text-2xl font-bold text-bread-ink dark:text-bread-cream">Live Preview</h2>
-        <p class="mt-2 text-sm text-black/65 dark:text-white/70">Embed will appear below.</p>
+      <aside class="rounded-[2rem] border border-black/8 bg-white/95 p-6 backdrop-blur-sm">
+        <h2 class="font-serif text-2xl font-bold text-bread-ink">Live Preview</h2>
+        <p class="mt-2 text-sm text-black/65 ">Embed will appear below.</p>
 
-        <div id="embed-preview" class="mt-6 rounded-2xl border border-black/10 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-bread-night">
-          <p id="preview-message-content" class="mb-4 hidden text-base leading-7 text-bread-ink dark:text-bread-cream"></p>
+        <div id="embed-preview" class="mt-6 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+          <p id="preview-message-content" class="mb-4 hidden text-base leading-7 text-bread-ink "></p>
           <div id="preview-color-bar" class="h-1 rounded-full bg-bread-gold"></div>
-          <h3 id="preview-title" class="mt-5 text-xl font-semibold text-bread-ink dark:text-bread-cream">DailyBread</h3>
-          <p id="preview-description" class="mt-4 text-base leading-7 text-black/75 dark:text-white/70">Start typing to see your devotional embed appear here.</p>
-          <img id="preview-image" src="" alt="" class="mt-5 hidden w-full rounded-xl border border-black/10 object-cover dark:border-white/10" />
-          <div id="preview-verse" class="mt-5 rounded-2xl border border-black/10 bg-white p-4 text-sm text-black/80 dark:border-white/10 dark:bg-bread-charcoal dark:text-white/70 hidden"></div>
-          <p id="preview-footer" class="mt-6 text-sm font-semibold uppercase tracking-[0.15em] text-black/45 dark:text-white/45">DailyBread</p>
+          <h3 id="preview-title" class="mt-5 text-xl font-semibold text-bread-ink ">DailyBread</h3>
+          <p id="preview-description" class="mt-4 text-base leading-7 text-black/75 ">Start typing to see your devotional embed appear here.</p>
+          <img id="preview-image" src="" alt="" class="mt-5 hidden w-full rounded-xl border border-black/10 object-cover" />
+          <div id="preview-verse" class="mt-5 rounded-2xl border border-black/10 bg-white p-4 text-sm text-black/80  hidden"></div>
+          <p id="preview-footer" class="mt-6 text-sm font-semibold uppercase tracking-[0.15em] text-black/45">DailyBread</p>
         </div>
       </aside>
     </div>
@@ -264,7 +264,7 @@ function renderPreview() {
   }
   if (state.verse) {
     previewVerse.classList.remove('hidden');
-    previewVerse.innerHTML = `<span class="text-xs font-bold uppercase tracking-[0.15em] text-bread-sage" >${state.verse.reference}</span><p class="mt-3 leading-7">${state.verse.text}</p><p class="mt-3 text-xs uppercase tracking-[0.15em] text-black/45 dark:text-white/45">${state.verse.translation_label || state.verse.translation || ''}</p>`;
+    previewVerse.innerHTML = `<span class="text-xs font-bold uppercase tracking-[0.15em] text-bread-sage" >${state.verse.reference}</span><p class="mt-3 leading-7">${state.verse.text}</p><p class="mt-3 text-xs uppercase tracking-[0.15em] text-black/45">${state.verse.translation_label || state.verse.translation || ''}</p>`;
   } else {
     previewVerse.classList.add('hidden');
   }
