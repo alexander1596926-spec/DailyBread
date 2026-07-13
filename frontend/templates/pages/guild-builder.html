@@ -407,8 +407,13 @@ async function saveEmbed() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
+
   const data = await response.json();
-  if (!response.ok || !data.success) throw new Error(data.error || 'Unable to save embed');
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || 'Unable to save embed');
+  }
+
   state.savedEmbedId = data.embed_id;
   return data.embed_id;
 }

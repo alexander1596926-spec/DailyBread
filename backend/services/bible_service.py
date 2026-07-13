@@ -5,7 +5,6 @@ import traceback
 from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
-from itsdangerous import exc
 import requests
 
 from backend.services.supabase_service import get_bible_cache, store_bible_cache
@@ -25,6 +24,20 @@ def _get_api_config() -> Dict[str, str]:
     ).rstrip("/")
 
     bible_id = os.getenv("bible_id")
+
+    if not bible_id:
+        # Fallback to NIV if no default is configured
+        bible_id = os.getenv("niv_bible_id")
+
+    if not bible_id:
+        raise ValueError(
+            "No Bible ID configured. Set bible_id or niv_bible_id."
+        )
+
+    if not api_key:
+        raise ValueError(
+            "Bible API key is missing."
+        )
 
     return {
         "api_key": api_key,
@@ -85,32 +98,53 @@ def _parse_translation_token(token: str) -> Optional[Dict[str, str]]:
     return None
 
 
-# Parse a Bible reference query into its component parts
 def _parse_reference_query(query: str) -> Dict[str, Any]:
     normalized_query = query.strip()
-    if not normalized_query:
-        return {"reference": "", "translations": [], "translation_labels": [], "query": ""}
 
-    prefix_match = re.match(r"^(?P<prefix>(?:[A-Za-z]{3,4}(?::[A-Za-z0-9-]+)?)(?:/(?:[A-Za-z]{3,4}(?::[A-Za-z0-9-]+)?))*)(?:\s+)(?P<reference>.+)$", normalized_query)
-    if prefix_match:
-        prefix = prefix_match.group("prefix")
+    if not normalized_query:
+        return {
+            "reference": "",
+            "translations": [],
+            "translation_labels": [],
+            "query": "",
+        }
+
+    parts = normalized_query.split(maxsplit=1)
+
+    if len(parts) == 2:
+        prefix = parts[0]
+        reference = parts[1].strip()
+
         translation_ids: List[str] = []
         translation_labels: List[str] = []
+
         for token in prefix.split("/"):
-            parsed_token = _parse_translation_token(token)
-            if parsed_token:
-                translation_ids.append(parsed_token["translation_id"])
-                translation_labels.append(parsed_token["label"])
+            # Only parse as translation if an environment variable exists.
+            env_name = f"{token.lower()}_bible_id"
+            translation_id = os.getenv(env_name)
+
+            if not translation_id:
+                translation_ids = []
+                translation_labels = []
+                break
+
+            translation_ids.append(translation_id)
+            translation_labels.append(token.upper())
 
         if translation_ids:
             return {
-                "reference": prefix_match.group("reference").strip(),
+                "reference": reference,
                 "translations": translation_ids,
                 "translation_labels": translation_labels,
                 "query": normalized_query,
             }
 
-    return {"reference": normalized_query, "translations": [], "translation_labels": [], "query": normalized_query}
+    return {
+        "reference": normalized_query,
+        "translations": [],
+        "translation_labels": [],
+        "query": normalized_query,
+    }
 
 
 # Resolves a verse reference to its passage ID using the Bible API.

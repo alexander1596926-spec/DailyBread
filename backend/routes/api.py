@@ -187,7 +187,12 @@ async def bible_search(query: str | None = None):
             "translation_label": verse.get("translation_label") or verse.get("translation"),
         }
     except Exception as exc:
-        return _error(str(exc) or "Unable to resolve verse.", status.HTTP_502_BAD_GATEWAY)
+        import traceback
+        traceback.print_exc()
+        return _error(
+            f"{type(exc).__name__}: {exc}",
+            status.HTTP_502_BAD_GATEWAY,
+        )
 
 
 # Channel Endpoints - list channels for guild, create webhook for channel
