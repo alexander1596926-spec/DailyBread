@@ -4,3 +4,9 @@ __pycache__/
 node_modules/
 dist/
 DS_Store
+grafana-provisioning/
+cloudflared-config.yml
+docker-compose.yml
+Dockerfile
+loki-config.yml
+tunnel-credentials.json

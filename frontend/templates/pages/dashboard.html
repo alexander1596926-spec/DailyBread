@@ -160,13 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function addBotToGuild(guildId) {
-  const discordClientId = document.body.dataset.discordClientId || '';
-  if (!discordClientId) {
-    alert('Bot invite is not configured. Please contact the administrator.');
-    return;
-  }
-
-  const botInviteUrl = `https://discord.com/oauth2/authorize?client_id=${discordClientId}&permissions=537119808&integration_type=0&scope=bot+applications.commands`;
+  const botInviteUrl = `https://discord.com/oauth2/authorize?client_id=1508328779280285736&permissions=537119808&integration_type=0&scope=bot+applications.commands`;
   window.open(botInviteUrl, '_blank');
   console.log('Opening bot invite for guild:', guildId);
 }
